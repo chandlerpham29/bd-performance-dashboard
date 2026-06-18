@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BD Performance Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0c1117;
+      --surface: #161f2b;
+      --surface2: #1e2a3a;
+      --surface-hover: #243247;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-secondary: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #34d399;
+      --green-bg: rgba(52, 211, 153, 0.2);
+      --green-border: rgba(52, 211, 153, 0.45);
+      --amber: #fbbf24;
+      --amber-bg: rgba(251, 191, 36, 0.2);
+      --amber-border: rgba(251, 191, 36, 0.45);
+      --red: #f87171;
+      --red-bg: rgba(248, 113, 113, 0.2);
+      --red-border: rgba(248, 113, 113, 0.45);
+      --accent: #60a5fa;
+      --link: #7dd3fc;
+      --chart-bar: #60a5fa;
+      --chart-bar-alt: #38bdf8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 15px;
+    }
+    header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #0c1117 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 600; color: var(--text); }
+    header p { color: var(--muted); font-size: 0.875rem; margin-top: 0.35rem; }
+
+    .sticky-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      padding: 0.9rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .filter-group label {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      font-weight: 600;
+    }
+    .filter-group select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      min-width: 200px;
+    }
+    .filter-group select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .source-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      overflow-x: auto;
+    }
+    .source-tab {
+      padding: 0.85rem 1.35rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      margin-bottom: -1px;
+      white-space: nowrap;
+      transition: color 0.15s, background 0.15s;
+    }
+    .source-tab:hover { color: var(--text-secondary); background: var(--surface-hover); }
+    .source-tab.active {
+      color: var(--text);
+      font-weight: 600;
+      border-bottom-color: var(--accent);
+      background: rgba(96, 165, 250, 0.08);
+    }
+
+    main {
+      padding: 1.75rem 2rem 3rem;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    section { margin-bottom: 2.75rem; }
+    section > h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    section.section-highlight {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.35rem 1.75rem 0.75rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+    }
+    section.section-highlight > h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: var(--text);
+      background: linear-gradient(90deg, rgba(96, 165, 250, 0.18) 0%, rgba(96, 165, 250, 0.04) 55%, transparent 100%);
+      margin: -0.25rem -0.75rem 1.35rem;
+      padding: 0.85rem 1rem 0.85rem 1.15rem;
+      border-left: 4px solid var(--accent);
+      border-bottom: none;
+      border-radius: 0 8px 8px 0;
+    }
+    .subsection { margin-bottom: 2rem; }
+    .subsection h3 {
+      font-size: 0.925rem;
+      font-weight: 600;
+      margin-bottom: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .panel--hero .data-table { font-size: 0.95rem; }
+    .panel--hero .data-table th,
+    .panel--hero .data-table td { padding: 1rem 1.35rem; }
+    .panel--hero .data-table th { font-size: 0.75rem; color: var(--text-secondary); }
+    .panel--hero .row-metric { font-size: 0.95rem; }
+
+    .scorecard-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; width: 100%; }
+    .scorecard-label {
+      padding: 0.85rem 1.35rem;
+      background: var(--surface2);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+    }
+    .scorecard-sublabel { font-size: 0.8rem; color: var(--muted); font-weight: 400; margin-top: 0.25rem; }
+
+    table.data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .data-table th, .data-table td {
+      padding: 0.85rem 1.15rem;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-secondary);
+    }
+    .data-table th {
+      background: var(--surface2);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .data-table td:first-child, .data-table th:first-child { text-align: left; }
+    .data-table tbody tr:hover { background: var(--surface-hover); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table .row-metric { font-weight: 600; color: var(--text); text-transform: none; font-size: 0.875rem; }
+
+    .clickable {
+      cursor: pointer;
+      color: var(--link);
+      font-weight: 600;
+      text-decoration: underline;
+      text-decoration-color: rgba(125, 211, 252, 0.5);
+      text-underline-offset: 3px;
+    }
+    .clickable:hover { color: #bae6fd; text-decoration-color: #bae6fd; }
+
+    .val-green {
+      color: #6ee7b7;
+      font-weight: 700;
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      border-radius: 6px;
+      padding: 0.25rem 0.65rem;
+      display: inline-block;
+    }
+    .val-amber {
+      color: #fcd34d;
+      font-weight: 700;
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-border);
+      border-radius: 6px;
+      padding: 0.25rem 0.65rem;
+      display: inline-block;
+    }
+    .val-red {
+      color: #fca5a5;
+      font-weight: 700;
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      border-radius: 6px;
+      padding: 0.25rem 0.65rem;
+      display: inline-block;
+    }
+
+    .chart-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      width: 100%;
+    }
+    .chart-box--full { max-width: none; }
+    .chart-box--half { max-width: none; }
+    .chart-wrap { position: relative; height: 240px; width: 100%; }
+    .chart-wrap.sm { height: 220px; }
+    .chart-wrap.md { height: 260px; }
+
+    .row-line {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      align-items: stretch;
+    }
+    .row-line--full { grid-template-columns: 1fr; }
+    @media (max-width: 900px) { .row-line { grid-template-columns: 1fr; } }
+    .row-line__cell {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .row-line__cell h3 { margin-bottom: 0.75rem; }
+    .row-line__cell .chart-box,
+    .row-line__cell .scorecard-wrap { flex: 1; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .metric-kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: 220px;
+      flex: 1;
+    }
+    .metric-kpi__label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+    .metric-kpi__period {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .metric-kpi__num {
+      font-size: 3.25rem;
+      font-weight: 700;
+      line-height: 1;
+      padding: 0.35rem 0.85rem;
+      border-radius: 10px;
+      margin-bottom: 0.75rem;
+    }
+    .metric-kpi__num.val-green { color: #6ee7b7; background: var(--green-bg); border: 2px solid var(--green-border); }
+    .metric-kpi__num.val-red { color: #fca5a5; background: var(--red-bg); border: 2px solid var(--red-border); }
+    .metric-kpi__target { font-size: 0.875rem; color: var(--text-secondary); }
+    .metric-kpi__target strong { color: var(--text); }
+
+    .act-kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.35rem 1.5rem;
+      text-align: center;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .act-kpi .act-kpi-title { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.65rem; font-weight: 600; }
+    .act-kpi .act-kpi-num { font-size: 2.5rem; font-weight: 700; color: var(--text); }
+    .act-kpi .act-kpi-period { font-size: 0.7rem; color: var(--muted); margin-top: 0.5rem; }
+
+    .activity-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+    @media (max-width: 900px) { .activity-grid { grid-template-columns: 1fr; } }
+
+    .activity-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.35rem;
+    }
+    .activity-block .act-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .activity-block .act-period-num { font-size: 2rem; font-weight: 700; line-height: 1; color: var(--text); }
+    .activity-block .act-wow { font-size: 0.85rem; font-weight: 600; }
+    .activity-block .act-wow.up { color: var(--green); }
+    .activity-block .act-wow.down { color: var(--red); }
+    .activity-block .act-wow.flat { color: var(--muted); }
+    .activity-block .act-period-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .activity-block h3 { margin-bottom: 0.5rem; }
+
+    .elsa-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 280px)); gap: 1.25rem; }
+    .elsa-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.35rem 1.5rem;
+      text-align: center;
+    }
+    .elsa-card .elsa-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; font-weight: 500; }
+    .elsa-card .elsa-num { font-size: 2.25rem; font-weight: 700; color: var(--text); }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 760px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .modal-header h4 { font-size: 0.95rem; color: var(--text); }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0.25rem; }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { overflow-y: auto; }
+    .detail-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .detail-table th, .detail-table td {
+      padding: 0.75rem 1.15rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      color: var(--text-secondary);
+    }
+    .detail-table th {
+      background: var(--surface2);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--muted);
+      position: sticky;
+      top: 0;
+    }
+    .detail-table tbody tr:hover { background: var(--surface-hover); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .placeholder-note {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BD Performance Dashboard</h1>
+    <p id="headerSub">Sarah Chen · Q2 2026</p>
+  </header>
+
+  <div class="sticky-bar">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Close Period</label>
+        <select id="closePeriod">
+          <option value="q2">Quarter — Q2 2026</option>
+          <option value="june">Month — June 2026</option>
+          <option value="week1">Week — Week 1 Jun 2026</option>
+          <option value="week2">Week — Week 2 Jun 2026</option>
+          <option value="year">Year — 2026</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>BD Rep (Owner)</label>
+        <select id="bdRep">
+          <option value="sarah">Sarah Chen</option>
+          <option value="james">James Okonkwo</option>
+          <option value="maria">Maria Santos</option>
+        </select>
+      </div>
+    </div>
+    <nav class="source-tabs" role="tablist">
+      <button type="button" class="source-tab active" role="tab" data-tab="scorecard" aria-selected="true">Scorecard</button>
+      <button type="button" class="source-tab" role="tab" data-tab="hubspot" aria-selected="false">Hubspot + ELSA APP</button>
+      <button type="button" class="source-tab" role="tab" data-tab="allego" aria-selected="false">Allego</button>
+      <button type="button" class="source-tab" role="tab" data-tab="gong" aria-selected="false">Gong</button>
+    </nav>
+  </div>
+
+  <main id="tabScorecard" class="tab-panel active" role="tabpanel">
+    <section>
+      <h2>Scorecard</h2>
+      <div class="scorecard-wrap panel panel--hero">
+        <div class="scorecard-label">
+          Target Attainment
+          <div class="scorecard-sublabel" id="combinedScorecardPeriod">Q2 2026</div>
+        </div>
+        <table class="data-table" id="combinedScorecardTable"></table>
+      </div>
+    </section>
+  </main>
+
+  <main id="tabHubspot" class="tab-panel" role="tabpanel" hidden>
+    <section class="section-highlight">
+      <h2>Pipeline Progress</h2>
+
+      <div class="row-line row-line--full">
+        <div class="row-line__cell">
+          <h3># of Won Deals Breakdown by Pipeline</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="wonDealsCombined"></table></div>
+        </div>
+      </div>
+
+      <div class="row-line">
+        <div class="row-line__cell">
+          <h3>Open Pipeline and Coverage</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="openPipelineCoverage"></table></div>
+        </div>
+        <div class="row-line__cell">
+          <h3>Open Pipeline MoM</h3>
+          <div class="chart-box"><div class="chart-wrap md"><canvas id="openPipeMoM"></canvas></div></div>
+        </div>
+      </div>
+
+      <div class="row-line">
+        <div class="row-line__cell">
+          <h3># of New Biz Deal Created</h3>
+          <div class="metric-kpi" id="newBizKpiBox"></div>
+        </div>
+        <div class="row-line__cell">
+          <h3># of New Biz Deal Created MoM</h3>
+          <div class="chart-box"><div class="chart-wrap md"><canvas id="newBizChart"></canvas></div></div>
+        </div>
+      </div>
+
+      <div class="row-line">
+        <div class="row-line__cell">
+          <h3># of New Demo Completed</h3>
+          <div class="metric-kpi" id="demoKpiBox"></div>
+        </div>
+        <div class="row-line__cell">
+          <h3># of New Demo Completed MoM</h3>
+          <div class="chart-box"><div class="chart-wrap md"><canvas id="demoChart"></canvas></div></div>
+        </div>
+      </div>
+
+      <div class="row-line">
+        <div class="row-line__cell">
+          <h3># of New Trial Completed</h3>
+          <div class="metric-kpi" id="trialKpiBox"></div>
+        </div>
+        <div class="row-line__cell">
+          <h3># of New Trial Completed MoM</h3>
+          <div class="chart-box"><div class="chart-wrap md"><canvas id="trialChart"></canvas></div></div>
+        </div>
+      </div>
+
+      <div class="row-line row-line--full">
+        <div class="row-line__cell">
+          <h3>Deals Progressed in Stage</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="progressedTable"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-highlight">
+      <h2>Activities</h2>
+      <div class="row-line">
+        <div class="row-line__cell"><div class="act-kpi" id="actExisting"></div></div>
+        <div class="row-line__cell"><div class="act-kpi" id="actNewLeads"></div></div>
+      </div>
+      <div class="row-line">
+        <div class="row-line__cell"><div class="act-kpi" id="actAssigned"></div></div>
+        <div class="row-line__cell"><div class="act-kpi" id="actEmails"></div></div>
+      </div>
+    </section>
+
+    <section class="section-highlight">
+      <h2>ELSA App Usage</h2>
+      <div class="row-line">
+        <div class="row-line__cell">
+          <div class="act-kpi">
+            <div class="act-kpi-title"># of Times Using ELSA App</div>
+            <div class="act-kpi-num clickable" id="elsaSessions">—</div>
+            <div class="act-kpi-period" id="elsaPeriodLabel">—</div>
+          </div>
+        </div>
+        <div class="row-line__cell">
+          <div class="act-kpi">
+            <div class="act-kpi-title">Total Minutes Using App</div>
+            <div class="act-kpi-num clickable" id="elsaMinutes">—</div>
+            <div class="act-kpi-period" id="elsaPeriodLabel2">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <main id="tabAllego" class="tab-panel" role="tabpanel" hidden>
+    <p class="placeholder-note">Allego — sales enablement &amp; learning content (demo data)</p>
+    <section>
+      <h2>Content Engagement</h2>
+      <div class="activity-grid" id="allegoGrid"></div>
+    </section>
+    <section>
+      <h2>Learning Progress</h2>
+      <div class="scorecard-wrap">
+        <table class="data-table" id="allegoLearning"></table>
+      </div>
+    </section>
+  </main>
+
+  <main id="tabGong" class="tab-panel" role="tabpanel" hidden>
+    <p class="placeholder-note">Gong — conversation intelligence &amp; call analytics (demo data)</p>
+    <section>
+      <h2>Call Activity</h2>
+      <div class="activity-grid" id="gongGrid"></div>
+    </section>
+    <section>
+      <h2>Conversation Metrics</h2>
+      <div class="grid-2">
+        <div class="subsection">
+          <h3>Calls Recorded — WoW</h3>
+          <div class="chart-box chart-box--half"><div class="chart-wrap sm"><canvas id="gongCallsChart"></canvas></div></div>
+        </div>
+        <div class="subsection">
+          <h3>Talk Ratio vs Target</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="gongTalkRatio"></table></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h4 id="modalTitle">Details</h4>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <table class="detail-table"><thead id="modalHead"></thead><tbody id="modalBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    Chart.defaults.color = "#cbd5e1";
+    Chart.defaults.borderColor = "#334155";
+    Chart.defaults.font = { family: "'Segoe UI', system-ui, sans-serif", size: 12 };
+    const charts = {};
+    const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun"];
+    const REPS = { sarah: "Sarah Chen", james: "James Okonkwo", maria: "Maria Santos" };
+
+    function attClass(pct) { return pct >= 80 ? "val-green" : pct >= 60 ? "val-amber" : "val-red"; }
+    function covClass(x) { return x >= 3 ? "val-green" : x >= 2 ? "val-amber" : "val-red"; }
+    function trafficTarget(actual, target) { return actual >= target ? "val-green" : "val-red"; }
+    function gapAttClass(gap, quota) { const pct = Math.max(0, Math.round((1 - gap / quota) * 100)); return { cls: attClass(pct), pct }; }
+    function fmtK(n) { return "$" + n + "K"; }
+    function pct(a, t) { return t ? Math.round((a / t) * 100) : 0; }
+
+    function openModal(title, headers, rows) {
+      document.getElementById("modalTitle").textContent = title;
+      document.getElementById("modalHead").innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+      document.getElementById("modalBody").innerHTML = rows.map(r => "<tr>" + r.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
+      document.getElementById("modal").classList.add("open");
+    }
+
+    /* Unified scorecard: Metric | Target | Actual | Gap | Attainment */
+    function combinedScorecardTable(tableId, metrics, drillMap) {
+      const html = `
+        <thead><tr><th>Metric</th><th>Target</th><th>Actual</th><th>Gap</th><th>Attainment</th></tr></thead>
+        <tbody>${metrics.map(m => `
+          <tr>
+            <td class="row-metric">${m.label}</td>
+            <td>${m.target}</td>
+            <td>${m.drillActual ? `<span class="clickable" data-drill="${m.drillActual}">${m.actual}</span>` : m.actual}</td>
+            <td>${m.drillGap ? `<span class="clickable" data-drill="${m.drillGap}">${m.gap}</span>` : m.gap}</td>
+            <td><span class="${m.attCls}">${m.attainment}</span></td>
+          </tr>`).join("")}
+        </tbody>`;
+      document.getElementById(tableId).innerHTML = html;
+      document.querySelectorAll(`#${tableId} .clickable`).forEach(el => {
+        el.addEventListener("click", () => {
+          const d = drillMap[el.dataset.drill];
+          openModal(d.title, d.headers, d.rows);
+        });
+      });
+    }
+
+    const PROFILES = {
+      sarah: {
+        t1: { quota: 250, booked: 180, gap: 70 },
+        t2q: { newBiz: { t: 24, a: 18 }, demo: { t: 12, a: 9 }, trial: { t: 8, a: 6 } },
+        t2m: { newBiz: { t: 8, a: 4 }, demo: { t: 4, a: 2 }, trial: { t: 3, a: 1 } },
+        wonPipelines: {
+          y: [
+            { name: "New Business", count: 6, amount: 98 },
+            { name: "Expansion", count: 4, amount: 62 },
+            { name: "Transactional", count: 2, amount: 20 },
+          ],
+          q: [
+            { name: "New Business", count: 3, amount: 49 },
+            { name: "Expansion", count: 2, amount: 31 },
+            { name: "Transactional", count: 1, amount: 10 },
+          ],
+          m: [
+            { name: "New Business", count: 1, amount: 18 },
+            { name: "Expansion", count: 1, amount: 14 },
+            { name: "Transactional", count: 0, amount: 0 },
+          ],
+          weeks: [
+            [
+              { name: "New Business", count: 0, amount: 0 },
+              { name: "Expansion", count: 0, amount: 0 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+            [
+              { name: "New Business", count: 1, amount: 16 },
+              { name: "Expansion", count: 0, amount: 0 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+            [
+              { name: "New Business", count: 0, amount: 0 },
+              { name: "Expansion", count: 0, amount: 0 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+            [
+              { name: "New Business", count: 0, amount: 0 },
+              { name: "Expansion", count: 1, amount: 12 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+          ],
+        },
+        openPipe: { gap: 70 },
+        openPipeSnapshots: [
+          { commit: { amount: 61, deals: 4 }, bestCase: { amount: 37, deals: 3 }, pipeline: { amount: 22, deals: 2 }, newBiz: 18, renewal: 102 },
+          { commit: { amount: 68, deals: 4 }, bestCase: { amount: 42, deals: 3 }, pipeline: { amount: 25, deals: 2 }, newBiz: 20, renewal: 115 },
+          { commit: { amount: 75, deals: 5 }, bestCase: { amount: 46, deals: 3 }, pipeline: { amount: 27, deals: 2 }, newBiz: 22, renewal: 126 },
+          { commit: { amount: 79, deals: 5 }, bestCase: { amount: 48, deals: 4 }, pipeline: { amount: 28, deals: 2 }, newBiz: 24, renewal: 131 },
+          { commit: { amount: 82, deals: 5 }, bestCase: { amount: 50, deals: 4 }, pipeline: { amount: 30, deals: 3 }, newBiz: 26, renewal: 136 },
+          { commit: { amount: 85, deals: 5 }, bestCase: { amount: 52, deals: 4 }, pipeline: { amount: 31, deals: 3 }, newBiz: 28, renewal: 140 },
+        ],
+        newBizMoM: [3, 4, 5, 4, 6, 4], newBizTarget: 5, newBizWeek: [1, 1, 1, 1],
+        newBizPipeMoM: [88, 102, 95, 105, 130, 115], newBizPipeTarget: 120, newBizPipeWeek: [28, 32, 30, 35],
+        demoMoM: [1, 2, 2, 1, 2, 1], demoTarget: 2, demoWeek: [0, 1, 0, 0],
+        trialMoM: [1, 1, 1, 1, 1, 1], trialTarget: 1, trialWeek: [0, 1, 0, 0],
+        activities: {
+          existing: { y: 32, q: 18, m: 5, weeks: [2, 3, 2, 4] },
+          newLeads: { y: 12, q: 7, m: 2, weeks: [1, 1, 0, 0] },
+          assigned: { y: 42, q: 24, m: 7, weeks: [2, 3, 1, 1] },
+          emails: { y: 268, q: 142, m: 35, weeks: [8, 9, 9, 9] },
+        },
+        elsa: { y: { sessions: 58, minutes: 712 }, q: { sessions: 34, minutes: 418 }, m: { sessions: 12, minutes: 142 }, weeks: [
+          { sessions: 3, minutes: 38 }, { sessions: 4, minutes: 52 }, { sessions: 3, minutes: 28 }, { sessions: 2, minutes: 24 },
+        ]},
+      },
+      james: {
+        t1: { quota: 300, booked: 264, gap: 36 },
+        t2q: { newBiz: { t: 28, a: 26 }, demo: { t: 14, a: 13 }, trial: { t: 10, a: 9 } },
+        t2m: { newBiz: { t: 9, a: 8 }, demo: { t: 5, a: 5 }, trial: { t: 3, a: 3 } },
+        wonPipelines: {
+          y: [
+            { name: "New Business", count: 10, amount: 155 },
+            { name: "Expansion", count: 6, amount: 89 },
+            { name: "Transactional", count: 2, amount: 20 },
+          ],
+          q: [
+            { name: "New Business", count: 5, amount: 78 },
+            { name: "Expansion", count: 3, amount: 45 },
+            { name: "Transactional", count: 1, amount: 10 },
+          ],
+          m: [
+            { name: "New Business", count: 2, amount: 32 },
+            { name: "Expansion", count: 1, amount: 18 },
+            { name: "Transactional", count: 0, amount: 0 },
+          ],
+          weeks: [
+            [
+              { name: "New Business", count: 1, amount: 14 },
+              { name: "Expansion", count: 0, amount: 0 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+            [
+              { name: "New Business", count: 1, amount: 18 },
+              { name: "Expansion", count: 0, amount: 0 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+            [
+              { name: "New Business", count: 0, amount: 0 },
+              { name: "Expansion", count: 0, amount: 0 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+            [
+              { name: "New Business", count: 0, amount: 0 },
+              { name: "Expansion", count: 1, amount: 12 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+          ],
+        },
+        openPipe: { gap: 36 },
+        openPipeSnapshots: [
+          { commit: { amount: 34, deals: 3 }, bestCase: { amount: 25, deals: 2 }, pipeline: { amount: 31, deals: 2 }, newBiz: 22, renewal: 68 },
+          { commit: { amount: 36, deals: 3 }, bestCase: { amount: 26, deals: 2 }, pipeline: { amount: 33, deals: 2 }, newBiz: 24, renewal: 71 },
+          { commit: { amount: 38, deals: 3 }, bestCase: { amount: 28, deals: 2 }, pipeline: { amount: 34, deals: 2 }, newBiz: 26, renewal: 74 },
+          { commit: { amount: 41, deals: 4 }, bestCase: { amount: 30, deals: 2 }, pipeline: { amount: 37, deals: 2 }, newBiz: 28, renewal: 80 },
+          { commit: { amount: 45, deals: 4 }, bestCase: { amount: 33, deals: 3 }, pipeline: { amount: 40, deals: 2 }, newBiz: 30, renewal: 88 },
+          { commit: { amount: 48, deals: 4 }, bestCase: { amount: 35, deals: 3 }, pipeline: { amount: 52, deals: 3 }, newBiz: 34, renewal: 101 },
+        ],
+        newBizMoM: [4, 5, 6, 5, 7, 5], newBizTarget: 6, newBizWeek: [1, 2, 1, 1],
+        newBizPipeMoM: [120, 140, 135, 145, 160, 155], newBizPipeTarget: 150, newBizPipeWeek: [38, 42, 40, 45],
+        demoMoM: [2, 2, 3, 2, 3, 3], demoTarget: 3, demoWeek: [1, 1, 1, 0],
+        trialMoM: [1, 2, 2, 1, 2, 2], trialTarget: 2, trialWeek: [0, 1, 1, 0],
+        activities: {
+          existing: { y: 48, q: 26, m: 8, weeks: [3, 3, 1, 1] },
+          newLeads: { y: 24, q: 14, m: 4, weeks: [1, 2, 1, 0] },
+          assigned: { y: 52, q: 31, m: 9, weeks: [2, 3, 2, 2] },
+          emails: { y: 362, q: 198, m: 52, weeks: [12, 14, 13, 13] },
+        },
+        elsa: { y: { sessions: 88, minutes: 1056 }, q: { sessions: 52, minutes: 624 }, m: { sessions: 18, minutes: 210 }, weeks: [
+          { sessions: 5, minutes: 58 }, { sessions: 5, minutes: 62 }, { sessions: 4, minutes: 48 }, { sessions: 4, minutes: 42 },
+        ]},
+      },
+      maria: {
+        t1: { quota: 220, booked: 110, gap: 110 },
+        t2q: { newBiz: { t: 20, a: 10 }, demo: { t: 10, a: 5 }, trial: { t: 7, a: 3 } },
+        t2m: { newBiz: { t: 7, a: 3 }, demo: { t: 3, a: 1 }, trial: { t: 2, a: 0 } },
+        wonPipelines: {
+          y: [
+            { name: "New Business", count: 3, amount: 52 },
+            { name: "Expansion", count: 3, amount: 48 },
+            { name: "Transactional", count: 1, amount: 10 },
+          ],
+          q: [
+            { name: "New Business", count: 2, amount: 28 },
+            { name: "Expansion", count: 1, amount: 18 },
+            { name: "Transactional", count: 0, amount: 0 },
+          ],
+          m: [
+            { name: "New Business", count: 1, amount: 14 },
+            { name: "Expansion", count: 0, amount: 0 },
+            { name: "Transactional", count: 0, amount: 0 },
+          ],
+          weeks: [
+            [
+              { name: "New Business", count: 0, amount: 0 },
+              { name: "Expansion", count: 0, amount: 0 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+            [
+              { name: "New Business", count: 0, amount: 0 },
+              { name: "Expansion", count: 0, amount: 0 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+            [
+              { name: "New Business", count: 1, amount: 14 },
+              { name: "Expansion", count: 0, amount: 0 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+            [
+              { name: "New Business", count: 0, amount: 0 },
+              { name: "Expansion", count: 0, amount: 0 },
+              { name: "Transactional", count: 0, amount: 0 },
+            ],
+          ],
+        },
+        openPipe: { gap: 110 },
+        openPipeSnapshots: [
+          { commit: { amount: 28, deals: 2 }, bestCase: { amount: 39, deals: 3 }, pipeline: { amount: 27, deals: 2 }, newBiz: 12, renewal: 68 },
+          { commit: { amount: 30, deals: 2 }, bestCase: { amount: 41, deals: 3 }, pipeline: { amount: 29, deals: 2 }, newBiz: 14, renewal: 71 },
+          { commit: { amount: 32, deals: 2 }, bestCase: { amount: 44, deals: 3 }, pipeline: { amount: 30, deals: 2 }, newBiz: 15, renewal: 75 },
+          { commit: { amount: 34, deals: 3 }, bestCase: { amount: 46, deals: 3 }, pipeline: { amount: 32, deals: 2 }, newBiz: 16, renewal: 79 },
+          { commit: { amount: 36, deals: 3 }, bestCase: { amount: 50, deals: 4 }, pipeline: { amount: 34, deals: 2 }, newBiz: 18, renewal: 102 },
+          { commit: { amount: 40, deals: 3 }, bestCase: { amount: 55, deals: 4 }, pipeline: { amount: 38, deals: 2 }, newBiz: 20, renewal: 113 },
+        ],
+        newBizMoM: [2, 2, 3, 2, 3, 2], newBizTarget: 4, newBizWeek: [0, 1, 0, 1],
+        newBizPipeMoM: [60, 72, 68, 70, 85, 78], newBizPipeTarget: 100, newBizPipeWeek: [18, 22, 20, 24],
+        demoMoM: [1, 1, 1, 0, 1, 1], demoTarget: 2, demoWeek: [0, 1, 0, 0],
+        trialMoM: [0, 1, 1, 0, 1, 0], trialTarget: 1, trialWeek: [0, 0, 0, 0],
+        activities: {
+          existing: { y: 20, q: 11, m: 3, weeks: [1, 1, 1, 0] },
+          newLeads: { y: 7, q: 4, m: 1, weeks: [0, 1, 0, 0] },
+          assigned: { y: 24, q: 14, m: 4, weeks: [1, 1, 1, 1] },
+          emails: { y: 168, q: 95, m: 24, weeks: [6, 6, 6, 6] },
+        },
+        elsa: { y: { sessions: 28, minutes: 248 }, q: { sessions: 18, minutes: 156 }, m: { sessions: 6, minutes: 52 }, weeks: [
+          { sessions: 1, minutes: 10 }, { sessions: 2, minutes: 18 }, { sessions: 2, minutes: 14 }, { sessions: 1, minutes: 10 },
+        ]},
+      },
+    };
+
+    function getDrillData() {
+      return {
+        acvBooked: { title: "ACV Booked — Deal List", headers: ["Deal", "Amount", "Pipeline", "Close Date"], rows: [
+          ["Acme Corp — Enterprise", fmtK(28), "New Business", "2026-04-12"],
+          ["GlobalTech Ltd — Upsell", fmtK(22), "Expansion", "2026-04-20"],
+          ["CloudNine SaaS", fmtK(11), "New Business", "2026-06-02"],
+        ]},
+        gap: { title: "Gap — Open Deals to Close", headers: ["Deal", "Amount", "Forecast", "Status"], rows: [
+          ["Horizon Bank — Enterprise", fmtK(35), "Commit", "Open"],
+          ["Pacific Airlines Training", fmtK(28), "Commit", "Proposal sent"],
+        ]},
+        newBiz: { title: "New Business Deals Created", headers: ["Deal", "Amount", "Stage", "Create Date"], rows: [
+          ["StartupHub Co", fmtK(14), "Discovery", "2026-06-01"],
+          ["Skills Academy LATAM", fmtK(18), "Qualified", "2026-05-22"],
+        ]},
+        newBizPipe: { title: "New Business Pipeline Created", headers: ["Deal", "Amount", "Stage", "Create Date"], rows: [
+          ["Horizon Bank — Enterprise", fmtK(35), "Proposal", "2026-06-10"],
+          ["Pacific Airlines Training", fmtK(28), "Qualified", "2026-05-28"],
+          ["RetailMax Group", fmtK(24), "Discovery", "2026-06-04"],
+        ]},
+        demo: { title: "New Demo Completed", headers: ["Deal", "Stage", "Date", "Next Step"], rows: [
+          ["MedHealth Group", "Demo Completed", "2026-05-24", "Follow-up proposal"],
+          ["EduFirst Academy", "Demo Completed", "2026-06-03", "Trial requested"],
+        ]},
+        trial: { title: "New Trial Completed", headers: ["Deal", "Stage", "Date", "Next Step"], rows: [
+          ["LegalEdge Partners", "Trial Active", "2026-06-05", "Check-in Day 7"],
+        ]},
+        pipeline: {
+          "New Business": { title: "Won — New Business", headers: ["Deal", "Amount", "Close Date"], rows: [["Acme Corp", fmtK(28), "2026-04-12"], ["CloudNine SaaS", fmtK(11), "2026-06-02"]] },
+          Expansion: { title: "Won — Expansion", headers: ["Deal", "Amount", "Close Date"], rows: [["GlobalTech Upsell", fmtK(22), "2026-04-20"]] },
+          Transactional: { title: "Won — Transactional", headers: ["Deal", "Amount", "Close Date"], rows: [["QuickLicense", fmtK(12), "2026-05-08"]] },
+        },
+        openTotal: { title: "Total Open Pipeline", headers: ["Deal", "Amount", "Category", "Close Date"], rows: [
+          ["Horizon Bank", fmtK(35), "Commit", "2026-06-20"],
+          ["RetailMax Group", fmtK(24), "Best Case", "2026-06-18"],
+          ["StartupHub Co", fmtK(14), "Pipeline", "2026-06-15"],
+        ]},
+        openGap: { title: "Gap to Target", headers: ["Deal", "Amount", "Forecast", "Status"], rows: [
+          ["Horizon Bank", fmtK(35), "Commit", "Needs close"],
+          ["Pacific Airlines", fmtK(28), "Commit", "In progress"],
+        ]},
+        openCov: { title: "Coverage — All Open Pipeline", headers: ["Deal", "Amount", "Category", "Close Date"], rows: [
+          ["Horizon Bank", fmtK(35), "Commit", "2026-06-20"],
+          ["RetailMax Group", fmtK(24), "Best Case", "2026-06-18"],
+        ]},
+        openCommit: { title: "Open Pipeline — Commit", headers: ["Deal", "Amount", "Close Date"], rows: [["Horizon Bank", fmtK(35), "2026-06-20"]] },
+        openBest: { title: "Open Pipeline — Best Case", headers: ["Deal", "Amount", "Close Date"], rows: [["RetailMax Group", fmtK(24), "2026-06-18"]] },
+        openPipe: { title: "Open Pipeline — Pipeline", headers: ["Deal", "Amount", "Close Date"], rows: [["StartupHub Co", fmtK(14), "2026-06-15"]] },
+        existingMeetings: { title: "Meetings with Existing Clients", headers: ["Account", "Date", "Duration", "Notes"], rows: [
+          ["GlobalTech Ltd", "2026-06-04", "45 min", "QBR + upsell"],
+          ["FinServe APAC", "2026-06-03", "30 min", "Renewal terms"],
+        ]},
+        newMeetings: { title: "Meetings with New Leads", headers: ["Company", "Date", "Duration", "Notes"], rows: [
+          ["StartupHub Co", "2026-06-05", "30 min", "Discovery"],
+        ]},
+        assignedLeads: { title: "Assigned Leads", headers: ["Contact", "Source", "Date", "Stage"], rows: [
+          ["Jane Park", "Inbound", "2026-06-03", "MQL"],
+          ["Carlos Mendez", "Webinar", "2026-06-02", "SQL"],
+        ]},
+        emails: { title: "Emails Sent", headers: ["Subject", "Date", "Type", "Status"], rows: [
+          ["Outreach — Apex Corp", "2026-06-05", "Cold intro", "Sent"],
+          ["Follow-up — StartupHub", "2026-06-04", "Post-meeting", "Sent"],
+        ]},
+        elsaSessions: { title: "ELSA App Sessions", headers: ["Date", "Activity", "Duration", "Score"], rows: [
+          ["Mon 2026-06-02", "Pronunciation practice", "12 min", "82"],
+          ["Wed 2026-06-04", "Role-play: sales call", "18 min", "76"],
+          ["Fri 2026-06-06", "Vocabulary: finance", "8 min", "88"],
+        ]},
+        elsaMinutes: { title: "ELSA App — Minutes Detail", headers: ["Date", "Activity", "Minutes", "Score"], rows: [
+          ["Mon 2026-06-02", "Pronunciation practice", "12", "82"],
+          ["Wed 2026-06-04", "Role-play: sales call", "18", "76"],
+          ["Fri 2026-06-06", "Vocabulary: finance", "8", "88"],
+        ]},
+      };
+    }
+
+    function resolvePeriods(filter) {
+      const Q2_MONTHS = [3, 4, 5];
+      const H1_MONTHS = [0, 1, 2, 3, 4, 5];
+      const JUNE_IDX = 5;
+
+      if (filter === "year") {
+        return {
+          type: "year",
+          table1Period: "2026",
+          table2Period: "2026",
+          table2Key: "y",
+          headerPeriod: "2026",
+          monthsCount: 6,
+          monthIndices: H1_MONTHS,
+          weekIndex: null,
+        };
+      }
+      if (filter === "q2") {
+        return {
+          type: "quarter",
+          table1Period: "Q2 2026",
+          table2Period: "Q2 2026",
+          table2Key: "q",
+          headerPeriod: "Q2 2026",
+          monthsCount: 3,
+          monthIndices: Q2_MONTHS,
+          weekIndex: null,
+        };
+      }
+      if (filter === "june") {
+        return {
+          type: "month",
+          table1Period: "Q2 2026",
+          table2Period: "June 2026",
+          table2Key: "m",
+          headerPeriod: "June 2026",
+          monthsCount: 1,
+          monthIndices: [JUNE_IDX],
+          weekIndex: null,
+        };
+      }
+      const weekNum = filter === "week2" ? 2 : 1;
+      return {
+        type: "week",
+        table1Period: "Q2 2026",
+        table2Period: `Week ${weekNum} Jun 2026`,
+        table2Key: "w",
+        headerPeriod: `Week ${weekNum} Jun 2026`,
+        monthsCount: 1,
+        monthIndices: [JUNE_IDX],
+        weekIndex: weekNum - 1,
+      };
+    }
+
+    function periodTarget(monthlyTarget, period) {
+      if (period.type === "year" || period.type === "quarter") return monthlyTarget * period.monthsCount;
+      if (period.type === "month") return monthlyTarget;
+      return Math.ceil(monthlyTarget / 4);
+    }
+
+    function sumIndices(arr, indices) {
+      return indices.reduce((s, i) => s + arr[i], 0);
+    }
+
+    function getMoMMetric(rep, momKey, weekKey, monthlyTarget, period) {
+      const p = PROFILES[rep];
+      const mom = p[momKey];
+      const target = periodTarget(monthlyTarget, period);
+      let actual;
+      if (period.type === "quarter" || period.type === "year") {
+        actual = sumIndices(mom, period.monthIndices);
+      } else if (period.type === "month") {
+        actual = mom[period.monthIndices[0]];
+      } else {
+        actual = p[weekKey][period.weekIndex];
+      }
+      return { actual, target };
+    }
+
+    function getActivityValue(act, period) {
+      if (period.type === "year") return act.y;
+      if (period.type === "quarter") return act.q;
+      if (period.type === "month") return act.m;
+      return act.weeks[period.weekIndex];
+    }
+
+    function getElsaValue(elsa, period) {
+      if (period.type === "year") return elsa.y;
+      if (period.type === "quarter") return elsa.q;
+      if (period.type === "month") return elsa.m;
+      return elsa.weeks[period.weekIndex];
+    }
+
+    function getWonPipelines(profile, period) {
+      const wp = profile.wonPipelines;
+      if (period.type === "year") return wp.y;
+      if (period.type === "quarter") return wp.q;
+      if (period.type === "month") return wp.m;
+      return wp.weeks[period.weekIndex];
+    }
+
+    function getOpenPipeSnapshotIndex(period) {
+      return period.monthIndices[period.monthIndices.length - 1];
+    }
+
+    function snapshotTotal(snap) {
+      return snap.commit.amount + snap.bestCase.amount + snap.pipeline.amount;
+    }
+
+    function snapshotDeals(snap) {
+      return snap.commit.deals + snap.bestCase.deals + snap.pipeline.deals;
+    }
+
+    function chartSliceFromOpenPipeSnapshots(snapshots, period) {
+      const idx = period.monthIndices[0];
+      if (period.type === "week") {
+        const s = snapshots[idx];
+        return { labels: ["Jun"], newBiz: [s.newBiz], renewal: [s.renewal] };
+      }
+      return {
+        labels: period.monthIndices.map(i => MONTHS[i]),
+        newBiz: period.monthIndices.map(i => snapshots[i].newBiz),
+        renewal: period.monthIndices.map(i => snapshots[i].renewal),
+      };
+    }
+
+    function chartSliceFromMoM(momData, weekData, period) {
+      if (period.type === "week") {
+        return { labels: ["Jun"], data: [weekData[period.weekIndex]] };
+      }
+      return {
+        labels: period.monthIndices.map(i => MONTHS[i]),
+        data: period.monthIndices.map(i => momData[i]),
+      };
+    }
+
+    function chartSliceFromPipeline(snapshots, period) {
+      return chartSliceFromOpenPipeSnapshots(snapshots, period);
+    }
+
+    function renderCombinedScorecard(rep, drill, table1Period, table2Period, period) {
+      const p = PROFILES[rep];
+      const t1 = p.t1;
+      const newBiz = getMoMMetric(rep, "newBizMoM", "newBizWeek", p.newBizTarget, period);
+      const newBizPipe = getMoMMetric(rep, "newBizPipeMoM", "newBizPipeWeek", p.newBizPipeTarget, period);
+      const demo = getMoMMetric(rep, "demoMoM", "demoWeek", p.demoTarget, period);
+      const trial = getMoMMetric(rep, "trialMoM", "trialWeek", p.trialTarget, period);
+
+      const acvAtt = pct(t1.booked, t1.quota);
+      const mkCount = (label, o, drillActual, drillGap) => {
+        const g = Math.max(0, o.t - o.a);
+        const att = pct(o.a, o.t);
+        return {
+          label, target: String(o.t), actual: String(o.a), gap: String(g),
+          attainment: att + "%", attCls: attClass(att),
+          drillActual, drillGap,
+        };
+      };
+      const mkAcv = (label, o, drillActual, drillGap) => {
+        const g = Math.max(0, o.t - o.a);
+        const att = pct(o.a, o.t);
+        return {
+          label, target: fmtK(o.t), actual: fmtK(o.a), gap: fmtK(g),
+          attainment: att + "%", attCls: attClass(att),
+          drillActual, drillGap,
+        };
+      };
+
+      const periodNote = table1Period === table2Period
+        ? table1Period
+        : `ACV Booked · ${table1Period} · Other metrics · ${table2Period}`;
+      document.getElementById("combinedScorecardPeriod").textContent = periodNote;
+
+      combinedScorecardTable("combinedScorecardTable", [
+        {
+          label: "ACV Booked",
+          target: fmtK(t1.quota),
+          actual: fmtK(t1.booked),
+          gap: fmtK(t1.gap),
+          attainment: acvAtt + "%",
+          attCls: attClass(acvAtt),
+          drillActual: "acvBooked",
+          drillGap: "gap",
+        },
+        mkAcv("New Business Pipeline Created", { t: newBizPipe.target, a: newBizPipe.actual }, "newBizPipe", "gapNewBizPipe"),
+        mkCount("New Business Deals Created", { t: newBiz.target, a: newBiz.actual }, "newBiz", "gapNewBiz"),
+        mkCount("New Demo Completed", { t: demo.target, a: demo.actual }, "demo", "gapDemo"),
+        mkCount("New Trial Completed", { t: trial.target, a: trial.actual }, "trial", "gapTrial"),
+      ], {
+        ...drill,
+        gapNewBizPipe: {
+          title: "Gap — New Business Pipeline to Create",
+          headers: ["Deal / Opportunity", "Stage", "Amount", "Status"],
+          rows: [["EduFirst Academy", "Discovery", fmtK(22), "Needs qualification"], ["Skills Academy LATAM", "Qualified", fmtK(18), "In progress"]],
+        },
+        gapNewBiz: {
+          title: "Gap — New Business Deals to Create",
+          headers: ["Deal / Opportunity", "Stage", "Amount", "Status"],
+          rows: [["StartupHub Co", "Discovery", fmtK(14), "In pipeline"], ["Skills Academy", "Qualified", fmtK(18), "Needs creation"]],
+        },
+        gapDemo: {
+          title: "Gap — Demos to Complete",
+          headers: ["Deal", "Stage", "Scheduled", "Status"],
+          rows: [["RetailMax Group", "Demo Scheduled", "2026-06-18", "Pending"]],
+        },
+        gapTrial: {
+          title: "Gap — Trials to Complete",
+          headers: ["Deal", "Stage", "Start Date", "Status"],
+          rows: [["UniConnect APAC", "Trial Active", "2026-06-01", "In progress"]],
+        },
+      });
+    }
+
+    function renderWonDealsCombined(rep, drill, period) {
+      const pipelines = getWonPipelines(PROFILES[rep], period);
+      const totalDeals = pipelines.reduce((s, x) => s + x.count, 0);
+      const totalAmount = pipelines.reduce((s, x) => s + x.amount, 0);
+      document.getElementById("wonDealsCombined").innerHTML = `
+        <thead>
+          <tr><th>Pipeline</th>${pipelines.map(x => `<th>${x.name}</th>`).join("")}<th>Total</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-metric"># Deals</td>
+            ${pipelines.map((x, i) => `<td><span class="clickable" data-p="${i}">${x.count}</span></td>`).join("")}
+            <td class="row-metric">${totalDeals}</td>
+          </tr>
+          <tr>
+            <td class="row-metric">Total Amount</td>
+            ${pipelines.map((x, i) => `<td><span class="clickable" data-p="${i}">${fmtK(x.amount)}</span></td>`).join("")}
+            <td class="row-metric">${fmtK(totalAmount)}</td>
+          </tr>
+        </tbody>`;
+
+      document.querySelectorAll("#wonDealsCombined .clickable").forEach(el => {
+        el.addEventListener("click", () => {
+          const name = pipelines[+el.dataset.p].name;
+          const d = drill.pipeline[name];
+          openModal(d.title, d.headers, d.rows);
+        });
+      });
+    }
+
+    function renderOpenCoverage(rep, drill, period) {
+      const profile = PROFILES[rep];
+      const gap = profile.openPipe.gap;
+      const snap = profile.openPipeSnapshots[getOpenPipeSnapshotIndex(period)];
+      const total = snapshotTotal(snap);
+      const totalDeals = snapshotDeals(snap);
+      const cov = +(total / gap).toFixed(2);
+      const covCls = covClass(cov);
+      const rows = [
+        { label: "Total", amount: total, deals: totalDeals, drill: "openTotal", cov, covCls, showCov: true },
+        { label: "Commit", amount: snap.commit.amount, deals: snap.commit.deals, drill: "openCommit" },
+        { label: "Best Case", amount: snap.bestCase.amount, deals: snap.bestCase.deals, drill: "openBest" },
+        { label: "Pipeline", amount: snap.pipeline.amount, deals: snap.pipeline.deals, drill: "openPipe" },
+      ];
+      document.getElementById("openPipelineCoverage").innerHTML = `
+        <thead><tr><th>Forecast Category</th><th>Total Open Pipeline</th><th># of Deals</th><th>Coverage</th></tr></thead>
+        <tbody>${rows.map(r => `
+          <tr>
+            <td class="row-metric">${r.label}</td>
+            <td><span class="clickable" data-o="${r.drill}">${fmtK(r.amount)}</span></td>
+            <td>${r.deals}</td>
+            <td>${r.showCov ? `<span class="clickable ${r.covCls}" data-o="openCov">${r.cov}x</span>` : "—"}</td>
+          </tr>`).join("")}
+        </tbody>`;
+      document.querySelectorAll("#openPipelineCoverage .clickable").forEach(el => {
+        el.addEventListener("click", () => {
+          const d = drill[el.dataset.o];
+          openModal(d.title, d.headers, d.rows);
+        });
+      });
+    }
+
+    function renderProgressed(drill) {
+      const rows = [
+        ["Acme Corp — Enterprise", "Proposal", "New Business", fmtK(45), "Send revised pricing"],
+        ["GlobalTech Ltd", "Negotiation", "Expansion", fmtK(62), "Legal review"],
+        ["MedHealth Group", "Demo Completed", "New Business", fmtK(38), "Schedule exec call"],
+      ];
+      document.getElementById("progressedTable").innerHTML = `
+        <thead><tr><th>Deal Name</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Next Steps</th></tr></thead>
+        <tbody>${rows.map((r,i) => `<tr>
+          <td><span class="clickable" data-pr="${i}">${r[0]}</span></td>
+          <td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td>
+        </tr>`).join("")}</tbody>`;
+      document.querySelectorAll("#progressedTable .clickable").forEach(el => {
+        el.addEventListener("click", () => {
+          const r = rows[+el.dataset.pr];
+          openModal("Deal — " + r[0], ["Field", "Value"], r.map((v,i) => [["Deal","Stage","Pipeline","Amount","Next Steps"][i], v]).slice(0,5).map(([f,v]) => [f,v]));
+        });
+      });
+    }
+
+    function renderMetricKpi(boxId, actual, target, periodLabel, drillKey, drill) {
+      const cls = trafficTarget(actual, target);
+      const box = document.getElementById(boxId);
+      box.innerHTML = `
+        <div class="metric-kpi__period">${periodLabel}</div>
+        <div class="metric-kpi__num clickable ${cls}" data-metric-kpi="${drillKey}">${actual}</div>
+        <div class="metric-kpi__target">Target: <strong>${target}</strong></div>`;
+      box.querySelector("[data-metric-kpi]").addEventListener("click", () => {
+        const d = drill[drillKey];
+        openModal(d.title, d.headers, d.rows);
+      });
+    }
+
+    function renderPipelineKpis(rep, period, drill) {
+      const p = PROFILES[rep];
+      const metrics = [
+        { box: "newBizKpiBox", mom: "newBizMoM", week: "newBizWeek", target: p.newBizTarget, drill: "newBiz" },
+        { box: "demoKpiBox", mom: "demoMoM", week: "demoWeek", target: p.demoTarget, drill: "demo" },
+        { box: "trialKpiBox", mom: "trialMoM", week: "trialWeek", target: p.trialTarget, drill: "trial" },
+      ];
+      metrics.forEach(m => {
+        const { actual, target } = getMoMMetric(rep, m.mom, m.week, m.target, period);
+        renderMetricKpi(m.box, actual, target, period.headerPeriod, m.drill, drill);
+      });
+    }
+
+    function renderHubspotActivities(rep, drill, period) {
+      const acts = [
+        { id: "actExisting", key: "existingMeetings", title: "Meetings with Existing Clients", data: PROFILES[rep].activities.existing },
+        { id: "actNewLeads", key: "newMeetings", title: "Meetings with New Leads", data: PROFILES[rep].activities.newLeads },
+        { id: "actAssigned", key: "assignedLeads", title: "Assigned Leads", data: PROFILES[rep].activities.assigned },
+        { id: "actEmails", key: "emails", title: "Emails Sent", data: PROFILES[rep].activities.emails },
+      ];
+      acts.forEach(a => {
+        const val = getActivityValue(a.data, period);
+        const el = document.getElementById(a.id);
+        el.innerHTML = `
+          <div class="act-kpi-title">${a.title}</div>
+          <div class="act-kpi-num clickable" data-act="${a.key}">${val}</div>
+          <div class="act-kpi-period">${period.headerPeriod}</div>`;
+        el.querySelector("[data-act]").addEventListener("click", () => {
+          const d = drill[a.key];
+          openModal(d.title, d.headers, d.rows);
+        });
+      });
+    }
+
+    function getWeekLabels() {
+      return Array.from({ length: 8 }, (_, i) => `W${i + 1} June`);
+    }
+
+    const BAR_FILL = "rgba(96, 165, 250, 0.9)";
+    const BAR_FILL_ALT = "rgba(56, 189, 248, 0.85)";
+    const STACK_NEW_BIZ = "rgba(96, 165, 250, 0.92)";
+    const STACK_RENEWAL = "rgba(52, 211, 153, 0.92)";
+    const CHART_TICK = "#94a3b8";
+    const CHART_GRID = "rgba(51, 65, 85, 0.6)";
+
+    function chartScales(yTickOpts = {}) {
+      return {
+        x: {
+          ticks: { color: CHART_TICK, font: { size: 11 } },
+          grid: { color: CHART_GRID, drawBorder: false },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: CHART_TICK, font: { size: 11 }, ...yTickOpts },
+          grid: { color: CHART_GRID, drawBorder: false },
+        },
+      };
+    }
+
+    function activityBarChart(id, data, target, labels) {
+      destroyChart(id);
+      charts[id] = new Chart(document.getElementById(id), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{ data, backgroundColor: BAR_FILL, borderRadius: 5, borderSkipped: false }],
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: chartScales({ stepSize: Math.max(1, Math.ceil(Math.max(...data, target) / 5)) }),
+          maintainAspectRatio: false,
+        },
+        plugins: [targetLinePlugin(target, "#fbbf24")],
+      });
+    }
+
+    function barDataLabelsPlugin() {
+      return {
+        id: "barDataLabels",
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          const meta = chart.getDatasetMeta(0);
+          meta.data.forEach((bar, i) => {
+            const val = chart.data.datasets[0].data[i];
+            ctx.save();
+            ctx.fillStyle = "#f8fafc";
+            ctx.font = "bold 12px 'Segoe UI', sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(val, bar.x, bar.y - 6);
+            ctx.restore();
+          });
+        },
+      };
+    }
+
+    function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+    function targetLinePlugin(target, color) {
+      return {
+        id: "targetLine",
+        afterDraw(chart) {
+          const { ctx, chartArea, scales } = chart;
+          const y = scales.y.getPixelForValue(target);
+          if (y < chartArea.top || y > chartArea.bottom) return;
+          ctx.save();
+          ctx.strokeStyle = color || "#fbbf24";
+          ctx.setLineDash([6, 4]);
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(chartArea.left, y);
+          ctx.lineTo(chartArea.right, y);
+          ctx.stroke();
+          ctx.fillStyle = color || "#fbbf24";
+          ctx.font = "bold 11px 'Segoe UI', sans-serif";
+          ctx.fillText("Target: " + target, chartArea.right - 68, y - 4);
+          ctx.restore();
+        },
+      };
+    }
+
+    function barChartWithTarget(id, label, labels, data, target, color) {
+      destroyChart(id);
+      const maxVal = data.length ? Math.max(...data, target) : target;
+      charts[id] = new Chart(document.getElementById(id), {
+        type: "bar",
+        data: { labels, datasets: [{ label, data, backgroundColor: color || BAR_FILL, borderRadius: 5, borderSkipped: false, maxBarThickness: 48 }] },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: chartScales({ stepSize: Math.max(1, Math.ceil(maxVal / 5)) }),
+          maintainAspectRatio: false,
+          layout: { padding: { top: 20 } },
+        },
+        plugins: [targetLinePlugin(target, "#fbbf24"), barDataLabelsPlugin()],
+      });
+    }
+
+    function stackTotalLabelsPlugin() {
+      return {
+        id: "stackTotalLabels",
+        afterDatasetsDraw(chart) {
+          const { ctx, data } = chart;
+          const topMeta = chart.getDatasetMeta(data.datasets.length - 1);
+          data.labels.forEach((_, i) => {
+            const total = data.datasets.reduce((s, ds) => s + ds.data[i], 0);
+            const bar = topMeta.data[i];
+            ctx.save();
+            ctx.fillStyle = "#f8fafc";
+            ctx.font = "bold 12px 'Segoe UI', sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("$" + total + "K", bar.x, bar.y - 6);
+            ctx.restore();
+          });
+        },
+      };
+    }
+
+    function stackedPipelineMoMChart(id, labels, newBizData, renewalData) {
+      destroyChart(id);
+      const totals = labels.map((_, i) => newBizData[i] + renewalData[i]);
+      const maxVal = Math.max(...totals, 1);
+      const yStep = Math.max(10, Math.ceil(maxVal / 5));
+      charts[id] = new Chart(document.getElementById(id), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            { label: "New Business", data: newBizData, backgroundColor: STACK_NEW_BIZ, stack: "openPipe", borderRadius: 0, borderSkipped: false, maxBarThickness: 48 },
+            { label: "Renewal Pipeline", data: renewalData, backgroundColor: STACK_RENEWAL, stack: "openPipe", borderRadius: { topLeft: 5, topRight: 5 }, borderSkipped: false, maxBarThickness: 48 },
+          ],
+        },
+        options: {
+          plugins: {
+            legend: {
+              display: true,
+              position: "top",
+              labels: { color: CHART_TICK, boxWidth: 14, padding: 14, font: { size: 11, weight: "600" } },
+            },
+          },
+          scales: {
+            x: { stacked: true, ticks: { color: CHART_TICK, font: { size: 11 } }, grid: { color: CHART_GRID, drawBorder: false } },
+            y: { stacked: true, beginAtZero: true, ticks: { color: CHART_TICK, font: { size: 11 }, stepSize: yStep }, grid: { color: CHART_GRID, drawBorder: false } },
+          },
+          maintainAspectRatio: false,
+          layout: { padding: { top: 24 } },
+        },
+        plugins: [stackTotalLabelsPlugin()],
+      });
+    }
+
+    function renderCharts(rep, period) {
+      const p = PROFILES[rep];
+
+      const pipe = chartSliceFromOpenPipeSnapshots(p.openPipeSnapshots, period);
+      stackedPipelineMoMChart("openPipeMoM", pipe.labels, pipe.newBiz, pipe.renewal);
+
+      const chartTarget = period.type === "week"
+        ? periodTarget(p.newBizTarget, period)
+        : p.newBizTarget;
+      const newBiz = chartSliceFromMoM(p.newBizMoM, p.newBizWeek, period);
+      barChartWithTarget("newBizChart", "# New Biz", newBiz.labels, newBiz.data, chartTarget);
+
+      const demoTarget = period.type === "week" ? periodTarget(p.demoTarget, period) : p.demoTarget;
+      const demo = chartSliceFromMoM(p.demoMoM, p.demoWeek, period);
+      barChartWithTarget("demoChart", "# Demos", demo.labels, demo.data, demoTarget);
+
+      const trialTarget = period.type === "week" ? periodTarget(p.trialTarget, period) : p.trialTarget;
+      const trial = chartSliceFromMoM(p.trialMoM, p.trialWeek, period);
+      barChartWithTarget("trialChart", "# Trials", trial.labels, trial.data, trialTarget);
+    }
+
+    const ALLEGO = {
+      sarah: {
+        items: [
+          { title: "Content Views", val: 48, wow: "+6%", dir: "up", bars: [5,6,5,7,6,7,8,8], target: 7 },
+          { title: "Pitches Shared", val: 12, wow: "−8%", dir: "down", bars: [2,2,1,2,1,2,1,1], target: 2 },
+          { title: "External Shares", val: 9, wow: "+12%", dir: "up", bars: [1,1,1,2,1,2,2,2], target: 2 },
+          { title: "Learning Modules Completed", val: 6, wow: "+20%", dir: "up", bars: [0,1,1,1,1,1,2,2], target: 2 },
+        ],
+        learning: [
+          ["Product Pitch — Enterprise", "Completed", "100%"],
+          ["Objection Handling", "In Progress", "67%"],
+          ["Competitive Battlecard", "Not Started", "0%"],
+        ],
+      },
+      james: {
+        items: [
+          { title: "Content Views", val: 72, wow: "+10%", dir: "up", bars: [7,8,8,9,8,9,10,11], target: 9 },
+          { title: "Pitches Shared", val: 22, wow: "+5%", dir: "up", bars: [3,3,3,3,3,4,4,4], target: 4 },
+          { title: "External Shares", val: 15, wow: "+8%", dir: "up", bars: [2,2,2,2,2,2,3,3], target: 3 },
+          { title: "Learning Modules Completed", val: 11, wow: "+15%", dir: "up", bars: [1,1,2,1,2,2,2,3], target: 3 },
+        ],
+        learning: [
+          ["Product Pitch — Enterprise", "Completed", "100%"],
+          ["Objection Handling", "Completed", "100%"],
+          ["New Market Playbook", "Completed", "100%"],
+        ],
+      },
+      maria: {
+        items: [
+          { title: "Content Views", val: 28, wow: "−5%", dir: "down", bars: [4,3,4,3,3,3,2,3], target: 5 },
+          { title: "Pitches Shared", val: 5, wow: "−20%", dir: "down", bars: [1,1,0,1,0,1,0,0], target: 2 },
+          { title: "External Shares", val: 4, wow: "flat", dir: "flat", bars: [1,0,1,0,1,0,1,0], target: 1 },
+          { title: "Learning Modules Completed", val: 2, wow: "−33%", dir: "down", bars: [0,1,0,0,1,0,0,0], target: 2 },
+        ],
+        learning: [
+          ["Product Pitch — Enterprise", "In Progress", "45%"],
+          ["Objection Handling", "Not Started", "0%"],
+        ],
+      },
+    };
+
+    const GONG = {
+      sarah: {
+        items: [
+          { title: "Calls Recorded", val: 24, wow: "+4%", dir: "up", bars: [3,3,2,4,3,3,4,4], target: 4 },
+          { title: "Meetings Analyzed", val: 18, wow: "+6%", dir: "up", bars: [2,2,2,3,2,3,3,3], target: 3 },
+          { title: "Deals with Gong Activity", val: 14, wow: "−7%", dir: "down", bars: [2,2,2,1,2,1,2,1], target: 2 },
+          { title: "Follow-up Emails Logged", val: 31, wow: "+9%", dir: "up", bars: [3,4,3,4,4,3,5,5], target: 5 },
+        ],
+        talkRatio: { rep: 42, target: 45, customer: 58 },
+        callsBars: [3,3,2,4,3,3,4,4],
+        callsTarget: 4,
+      },
+      james: {
+        items: [
+          { title: "Calls Recorded", val: 38, wow: "+12%", dir: "up", bars: [4,5,4,5,5,5,6,6], target: 5 },
+          { title: "Meetings Analyzed", val: 32, wow: "+10%", dir: "up", bars: [3,4,4,4,5,4,5,5], target: 5 },
+          { title: "Deals with Gong Activity", val: 22, wow: "+8%", dir: "up", bars: [3,3,3,3,3,3,4,4], target: 4 },
+          { title: "Follow-up Emails Logged", val: 45, wow: "+6%", dir: "up", bars: [5,5,5,6,5,6,6,7], target: 6 },
+        ],
+        talkRatio: { rep: 38, target: 45, customer: 62 },
+        callsBars: [4,5,4,5,5,5,6,6],
+        callsTarget: 5,
+      },
+      maria: {
+        items: [
+          { title: "Calls Recorded", val: 14, wow: "−10%", dir: "down", bars: [2,2,1,2,1,1,2,1], target: 3 },
+          { title: "Meetings Analyzed", val: 11, wow: "−8%", dir: "down", bars: [2,1,2,1,1,2,1,1], target: 2 },
+          { title: "Deals with Gong Activity", val: 8, wow: "−15%", dir: "down", bars: [1,1,1,1,0,1,1,0], target: 2 },
+          { title: "Follow-up Emails Logged", val: 19, wow: "−5%", dir: "down", bars: [3,2,3,2,2,2,2,2], target: 3 },
+        ],
+        talkRatio: { rep: 52, target: 45, customer: 48 },
+        callsBars: [2,2,1,2,1,1,2,1],
+        callsTarget: 3,
+      },
+    };
+
+    function renderAllegoTab(rep, periodLabel) {
+      const data = ALLEGO[rep] || ALLEGO.sarah;
+      const weekLabels = getWeekLabels();
+      document.getElementById("allegoGrid").innerHTML = data.items.map((a, i) => `
+        <div class="subsection activity-block">
+          <h3>${a.title}</h3>
+          <div class="act-period-label">Selected period · ${periodLabel}</div>
+          <div class="act-header">
+            <span class="act-period-num clickable" data-allego="${i}">${a.val}</span>
+            <span class="act-wow ${a.dir}">${a.dir === "up" ? "▲" : a.dir === "down" ? "▼" : "●"} ${a.wow} WoW</span>
+          </div>
+          <div class="chart-box"><div class="chart-wrap sm"><canvas id="allegoChart${i}"></canvas></div></div>
+        </div>`).join("");
+      data.items.forEach((a, i) => {
+        document.querySelector(`[data-allego="${i}"]`).addEventListener("click", () =>
+          openModal(`${a.title} — Detail`, ["Item", "Date", "Type", "Views"], [
+            ["Enterprise Pitch Deck", "2026-06-04", "Share", "12"],
+            ["Case Study — Acme", "2026-06-02", "View", "8"],
+          ]));
+        activityBarChart(`allegoChart${i}`, a.bars, a.target, weekLabels);
+      });
+      document.getElementById("allegoLearning").innerHTML = `
+        <thead><tr><th>Module</th><th>Status</th><th>Progress</th></tr></thead>
+        <tbody>${data.learning.map((r, i) => `
+          <tr><td><span class="clickable" data-allego-mod="${i}">${r[0]}</span></td><td>${r[1]}</td>
+          <td><span class="${pct(parseInt(r[2]), 100) >= 80 ? "val-green" : pct(parseInt(r[2]), 100) >= 50 ? "val-amber" : "val-red"}">${r[2]}</span></td></tr>`).join("")}
+        </tbody>`;
+      document.querySelectorAll("[data-allego-mod]").forEach(el => {
+        el.addEventListener("click", () => {
+          const r = data.learning[+el.dataset.allegoMod];
+          openModal("Learning — " + r[0], ["Field", "Value"], [["Module", r[0]], ["Status", r[1]], ["Progress", r[2]]]);
+        });
+      });
+    }
+
+    function renderGongTab(rep, periodLabel) {
+      const data = GONG[rep] || GONG.sarah;
+      const weekLabels = getWeekLabels();
+      document.getElementById("gongGrid").innerHTML = data.items.map((a, i) => `
+        <div class="subsection activity-block">
+          <h3>${a.title}</h3>
+          <div class="act-period-label">Selected period · ${periodLabel}</div>
+          <div class="act-header">
+            <span class="act-period-num clickable" data-gong="${i}">${a.val}</span>
+            <span class="act-wow ${a.dir}">${a.dir === "up" ? "▲" : a.dir === "down" ? "▼" : "●"} ${a.wow} WoW</span>
+          </div>
+          <div class="chart-box"><div class="chart-wrap sm"><canvas id="gongActChart${i}"></canvas></div></div>
+        </div>`).join("");
+      data.items.forEach((a, i) => {
+        document.querySelector(`[data-gong="${i}"]`).addEventListener("click", () =>
+          openModal(`${a.title} — Detail`, ["Call / Meeting", "Date", "Duration", "Deal"], [
+            ["Acme Corp — Discovery", "2026-06-04", "32 min", "Acme Corp"],
+            ["GlobalTech — QBR", "2026-06-03", "45 min", "GlobalTech"],
+          ]));
+        activityBarChart(`gongActChart${i}`, a.bars, a.target, weekLabels);
+      });
+      const tr = data.talkRatio;
+      const repTalkCls = tr.rep <= tr.target ? "val-green" : "val-amber";
+      document.getElementById("gongTalkRatio").innerHTML = `
+        <thead><tr><th>Metric</th><th>Rep %</th><th>Target</th><th>Customer %</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="row-metric">Talk Ratio</td>
+            <td><span class="clickable ${repTalkCls}" id="gongTalkRep">${tr.rep}%</span></td>
+            <td>${tr.target}%</td>
+            <td><span class="clickable">${tr.customer}%</span></td>
+          </tr>
+        </tbody>`;
+      document.getElementById("gongTalkRep").addEventListener("click", () =>
+        openModal("Talk Ratio — Call Breakdown", ["Call", "Rep Talk %", "Date"], [
+          ["Acme Discovery", "40%", "2026-06-04"],
+          ["GlobalTech QBR", "44%", "2026-06-03"],
+        ]));
+      activityBarChart("gongCallsChart", data.callsBars, data.callsTarget, weekLabels);
+    }
+
+    let activeTab = "scorecard";
+
+    function switchTab(tabId) {
+      activeTab = tabId;
+      document.querySelectorAll(".source-tab").forEach(btn => {
+        const on = btn.dataset.tab === tabId;
+        btn.classList.toggle("active", on);
+        btn.setAttribute("aria-selected", on ? "true" : "false");
+      });
+      document.querySelectorAll(".tab-panel").forEach(panel => {
+        const on = panel.id === "tab" + tabId.charAt(0).toUpperCase() + tabId.slice(1);
+        panel.classList.toggle("active", on);
+        panel.hidden = !on;
+      });
+      render();
+    }
+
+    function render() {
+      const rep = document.getElementById("bdRep").value;
+      const filter = document.getElementById("closePeriod").value;
+      const period = resolvePeriods(filter);
+      const { table1Period, table2Period } = period;
+      const drill = getDrillData();
+
+      document.getElementById("headerSub").textContent = `${REPS[rep]} · ${period.headerPeriod}`;
+
+      if (activeTab === "scorecard") {
+        renderCombinedScorecard(rep, drill, table1Period, table2Period, period);
+      } else if (activeTab === "hubspot") {
+        renderWonDealsCombined(rep, drill, period);
+        renderOpenCoverage(rep, drill, period);
+        renderProgressed(drill);
+        renderPipelineKpis(rep, period, drill);
+        renderHubspotActivities(rep, drill, period);
+        renderCharts(rep, period);
+        const elsaVal = getElsaValue(PROFILES[rep].elsa, period);
+        document.getElementById("elsaSessions").textContent = elsaVal.sessions;
+        document.getElementById("elsaMinutes").textContent = elsaVal.minutes;
+        document.getElementById("elsaPeriodLabel").textContent = period.headerPeriod;
+        document.getElementById("elsaPeriodLabel2").textContent = period.headerPeriod;
+        document.getElementById("elsaSessions").onclick = () => openModal(drill.elsaSessions.title, drill.elsaSessions.headers, drill.elsaSessions.rows);
+        document.getElementById("elsaMinutes").onclick = () => openModal(drill.elsaMinutes.title, drill.elsaMinutes.headers, drill.elsaMinutes.rows);
+      } else if (activeTab === "allego") {
+        renderAllegoTab(rep, period.headerPeriod);
+      } else if (activeTab === "gong") {
+        renderGongTab(rep, period.headerPeriod);
+      }
+    }
+
+    document.querySelectorAll(".source-tab").forEach(btn => {
+      btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+    });
+    document.getElementById("closePeriod").addEventListener("change", render);
+    document.getElementById("bdRep").addEventListener("change", render);
+    document.getElementById("modalClose").addEventListener("click", () => document.getElementById("modal").classList.remove("open"));
+    document.getElementById("modal").addEventListener("click", e => { if (e.target.id === "modal") document.getElementById("modal").classList.remove("open"); });
+    render();
+  </script>
+</body>
+</html>
