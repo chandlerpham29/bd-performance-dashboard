@@ -37,7 +37,7 @@ def build_scoping_rows():
     return [
         {
             "id": "BDPERF-1",
-            "title": "Scorecard — Target Attainment",
+            "title": "Hubspot — Scorecard",
             "objective": "Show quota target, actual bookings, new business pipeline created, activity targets, and attainment for the selected period so BD reps and leadership can monitor pacing in real time and quickly spot where performance is on or off track.",
             "chart": "Table",
             "purpose": "Single view of quota and activity target attainment for weekly BD review.",
