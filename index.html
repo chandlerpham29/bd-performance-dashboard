@@ -246,6 +246,22 @@
       padding: 0.25rem 0.65rem;
       display: inline-block;
     }
+    .stale-duration {
+      font-weight: 700;
+      border-radius: 6px;
+      padding: 0.25rem 0.65rem;
+      display: inline-block;
+    }
+    .stale-duration--warn {
+      color: #fcd34d;
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-border);
+    }
+    .stale-duration--critical {
+      color: #fca5a5;
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+    }
 
     .chart-box {
       background: var(--surface);
@@ -604,33 +620,20 @@
     </section>
 
     <section class="section-highlight">
-      <h2>ELSA App Usage</h2>
-      <div class="row-line">
-        <div class="row-line__cell">
-          <div class="act-kpi">
-            <div class="act-kpi-title"># of Times Using ELSA App</div>
-            <div class="act-kpi-num clickable" id="elsaSessions">—</div>
-            <div class="act-kpi-period" id="elsaPeriodLabel">—</div>
-          </div>
-        </div>
-        <div class="row-line__cell">
-          <div class="act-kpi">
-            <div class="act-kpi-title">Total Minutes Using App</div>
-            <div class="act-kpi-num clickable" id="elsaMinutes">—</div>
-            <div class="act-kpi-period" id="elsaPeriodLabel2">—</div>
-          </div>
-        </div>
+      <h2>Learning Time</h2>
+      <div class="summary-kpi-row">
+        <div class="num-kpi num-kpi--compact" id="learningTimeElsa"></div>
+        <div class="num-kpi num-kpi--compact" id="learningTimeAllego"></div>
+        <div class="num-kpi num-kpi--compact" id="learningTimeGong"></div>
       </div>
     </section>
 
     <section class="section-highlight">
       <h2>Allego</h2>
       <div class="summary-kpi-row">
-        <div class="num-kpi num-kpi--compact" id="summaryAllegoChannel"></div>
-        <div class="num-kpi num-kpi--compact" id="summaryAllegoIndividual"></div>
-        <div class="num-kpi num-kpi--compact" id="summaryAllegoDsrCreated"></div>
-        <div class="num-kpi num-kpi--compact" id="summaryAllegoDsrLinked"></div>
-        <div class="num-kpi num-kpi--compact" id="summaryAllegoRolePlay"></div>
+        <div class="num-kpi num-kpi--compact" id="summaryAllegoCourseCompletion"></div>
+        <div class="num-kpi num-kpi--compact" id="summaryAllegoAvgScore"></div>
+        <div class="num-kpi num-kpi--compact" id="summaryAllegoRevenueImpact"></div>
       </div>
     </section>
 
@@ -705,6 +708,13 @@
         <div class="row-line__cell">
           <h3>Deals Progressed in Stage</h3>
           <div class="scorecard-wrap"><table class="data-table" id="progressedTable"></table></div>
+        </div>
+      </div>
+
+      <div class="row-line row-line--full">
+        <div class="row-line__cell">
+          <h3>Stale Deals — No Progress in Period</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="staleDealsTable"></table></div>
         </div>
       </div>
     </section>
@@ -923,6 +933,11 @@
         elsa: { y: { sessions: 58, minutes: 712 }, q: { sessions: 34, minutes: 418 }, m: { sessions: 12, minutes: 142 }, weeks: [
           { sessions: 3, minutes: 38 }, { sessions: 4, minutes: 52 }, { sessions: 3, minutes: 28 }, { sessions: 2, minutes: 24 },
         ]},
+        staleDeals: [
+          { name: "RetailMax Group", stage: "Demo Scheduled", pipeline: "New Business", amount: 24, lastProgress: "2026-04-18", staleDays: 48 },
+          { name: "UniConnect APAC", stage: "Trial Active", pipeline: "New Business", amount: 18, lastProgress: "2026-05-02", staleDays: 34 },
+          { name: "LegalEdge Partners", stage: "Qualified", pipeline: "New Business", amount: 16, lastProgress: "2026-05-28", staleDays: 8 },
+        ],
       },
       james: {
         t1: { quota: 300, booked: 264, gap: 36 },
@@ -989,6 +1004,10 @@
         elsa: { y: { sessions: 88, minutes: 1056 }, q: { sessions: 52, minutes: 624 }, m: { sessions: 18, minutes: 210 }, weeks: [
           { sessions: 5, minutes: 58 }, { sessions: 5, minutes: 62 }, { sessions: 4, minutes: 48 }, { sessions: 4, minutes: 42 },
         ]},
+        staleDeals: [
+          { name: "Pacific Airlines Training", stage: "Proposal", pipeline: "New Business", amount: 28, lastProgress: "2026-03-22", staleDays: 75 },
+          { name: "FinServe APAC Renewal", stage: "Negotiation", pipeline: "Expansion", amount: 42, lastProgress: "2026-05-10", staleDays: 26 },
+        ],
       },
       maria: {
         t1: { quota: 220, booked: 110, gap: 110 },
@@ -1055,6 +1074,11 @@
         elsa: { y: { sessions: 28, minutes: 248 }, q: { sessions: 18, minutes: 156 }, m: { sessions: 6, minutes: 52 }, weeks: [
           { sessions: 1, minutes: 10 }, { sessions: 2, minutes: 18 }, { sessions: 2, minutes: 14 }, { sessions: 1, minutes: 10 },
         ]},
+        staleDeals: [
+          { name: "Horizon Bank — Enterprise", stage: "Proposal", pipeline: "New Business", amount: 35, lastProgress: "2026-02-14", staleDays: 112 },
+          { name: "EduFirst Academy", stage: "Discovery", pipeline: "New Business", amount: 22, lastProgress: "2026-04-05", staleDays: 61 },
+          { name: "MedHealth Group", stage: "Demo Completed", pipeline: "New Business", amount: 38, lastProgress: "2026-05-24", staleDays: 12 },
+        ],
       },
     };
 
@@ -1130,6 +1154,35 @@
           ["Mon 2026-06-02", "Pronunciation practice", "12", "82"],
           ["Wed 2026-06-04", "Role-play: sales call", "18", "76"],
           ["Fri 2026-06-06", "Vocabulary: finance", "8", "88"],
+        ]},
+        learningTimeElsa: { title: "ELSA App Learning Time", headers: ["Date", "Activity", "Duration", "Score"], rows: [
+          ["Mon 2026-06-02", "Pronunciation practice", "12 min", "82"],
+          ["Wed 2026-06-04", "Role-play: sales call", "18 min", "76"],
+          ["Fri 2026-06-06", "Vocabulary: finance", "8 min", "88"],
+        ]},
+        learningTimeAllego: { title: "Allego Learning Time", headers: ["Content", "Type", "Date", "Duration"], rows: [
+          ["Discovery Excellence", "Course", "2026-06-14", "45 min"],
+          ["Value-Based Selling", "Course", "2026-06-06", "38 min"],
+          ["Objection Handling Guide", "Guide", "2026-06-09", "22 min"],
+        ]},
+        learningTimeGong: { title: "Gong Learning Time", headers: ["Date", "Activity", "Duration"], rows: [
+          ["2026-06-04", "Call review & coaching", "45 min"],
+          ["2026-06-03", "Scorecard review", "38 min"],
+          ["2026-06-02", "Recording playback", "27 min"],
+        ]},
+        summaryCourseCompletion: { title: "Course Completion", headers: ["Course", "Status", "Completed", "Score"], rows: [
+          ["Discovery Excellence", "Completed", "2026-06-14", "92%"],
+          ["Value-Based Selling", "Completed", "2026-06-06", "88%"],
+          ["Advanced Negotiation", "In progress", "—", "—"],
+        ]},
+        summaryAvgSkills: { title: "Average Skill Score", headers: ["Skill", "Score", "Prior", "Change"], rows: [
+          ["Discovery & Prioritization", "78", "72", "+8%"],
+          ["Product Knowledge", "75", "71", "+6%"],
+          ["Value Prop & Objections", "72", "68", "+6%"],
+        ]},
+        summaryRevenueImpact: { title: "Revenue Impact by DSRs", headers: ["DSR Name", "Opportunity", "Amount", "Stage"], rows: [
+          ["Acme Corp — Enterprise Eval", "Acme Corp — Enterprise", fmtK(45), "Proposal"],
+          ["GlobalTech Expansion", "GlobalTech Ltd — Expansion", fmtK(62), "Negotiation"],
         ]},
       };
     }
@@ -1240,10 +1293,46 @@
         contentChannelViews: getPeriodValue(u.contentChannelViews, period),
         contentIndividualViews: getPeriodValue(u.contentIndividualViews, period),
         courseCompleted: getPeriodValue(u.courseCompleted, period),
+        coursesAssigned: getPeriodValue(u.coursesAssigned, period),
         dsrCreated: getPeriodValue(u.dsrCreated, period),
         dsrLinkedOpps: getPeriodValue(u.dsrLinkedOpps, period),
         rolePlayCount: getPeriodValue(u.rolePlayCount, period),
+        revenueImpactDsr: getPeriodValue(u.revenueImpactDsr, period),
+        learningTimeHours: getPeriodValue(u.learningTimeHours, period),
       };
+    }
+
+    function getAllegoSkillsPrior(rep, period) {
+      const s = ALLEGO[rep].skillsPrior;
+      if (period.type === "year") return s.y;
+      if (period.type === "quarter") return s.q;
+      if (period.type === "month") return s.m;
+      return s.weeks[period.weekIndex];
+    }
+
+    function averageSkillScore(skills) {
+      return Math.round(skills.reduce((sum, v) => sum + v, 0) / skills.length);
+    }
+
+    function skillImprovementPct(current, prior) {
+      if (!prior) return 0;
+      return Math.round(((current - prior) / prior) * 100);
+    }
+
+    function formatLearningHours(minutesOrHours, fromMinutes) {
+      const hours = fromMinutes ? minutesOrHours / 60 : minutesOrHours;
+      return hours >= 10 ? Math.round(hours) + " hrs" : hours.toFixed(1) + " hrs";
+    }
+
+    function staleDurationClass(days) {
+      if (days >= 60) return "stale-duration stale-duration--critical";
+      if (days >= 14) return "stale-duration stale-duration--warn";
+      return "stale-duration";
+    }
+
+    function formatStaleDuration(days) {
+      if (days >= 30) return `${days} days (${Math.floor(days / 30)} mo)`;
+      return `${days} days`;
     }
 
     function getAllegoSkills(rep, period) {
@@ -1281,6 +1370,7 @@
         usage: {
           timeOnGong: resolveGongMetric(g.usage.timeOnGong, period),
           recordingViews: resolveGongMetric(g.usage.recordingViews, period),
+          learningTimeHours: resolveGongMetric(g.usage.learningTimeHours, period),
         },
         scorecards,
       };
@@ -1406,14 +1496,95 @@
       });
     }
 
-    function renderElsaKpis(rep, drill, period) {
+    function renderLearningTime(rep, drill, period) {
       const elsaVal = getElsaValue(PROFILES[rep].elsa, period);
-      document.getElementById("elsaSessions").textContent = elsaVal.sessions;
-      document.getElementById("elsaMinutes").textContent = elsaVal.minutes;
-      document.getElementById("elsaPeriodLabel").textContent = period.headerPeriod;
-      document.getElementById("elsaPeriodLabel2").textContent = period.headerPeriod;
-      document.getElementById("elsaSessions").onclick = () => openModal(drill.elsaSessions.title, drill.elsaSessions.headers, drill.elsaSessions.rows);
-      document.getElementById("elsaMinutes").onclick = () => openModal(drill.elsaMinutes.title, drill.elsaMinutes.headers, drill.elsaMinutes.rows);
+      const allego = getAllegoUsage(rep, period);
+      const gongUsage = getGongForPeriod(rep, period).usage;
+      const periodLabel = period.headerPeriod;
+      const elsaHours = formatLearningHours(elsaVal.minutes, true);
+      const allegoHours = formatLearningHours(allego.learningTimeHours, false);
+      const gongHours = formatLearningHours(gongUsage.learningTimeHours.a, false);
+
+      renderNumberKpi(
+        "learningTimeElsa",
+        "Total Learning Time in ELSA App",
+        `${elsaVal.sessions} times · ${elsaHours}`,
+        periodLabel,
+        null,
+        "learningTimeElsa",
+        drill,
+      );
+      renderNumberKpi(
+        "learningTimeAllego",
+        "Total Learning Time in Allego",
+        allegoHours,
+        periodLabel,
+        null,
+        "learningTimeAllego",
+        drill,
+      );
+      renderNumberKpi(
+        "learningTimeGong",
+        "Total Learning Time in Gong",
+        gongHours,
+        periodLabel,
+        null,
+        "learningTimeGong",
+        drill,
+      );
+    }
+
+    function renderAllegoSummary(rep, period, drill) {
+      const u = getAllegoUsage(rep, period);
+      const periodLabel = period.headerPeriod;
+      const completionPct = u.coursesAssigned ? Math.round((u.courseCompleted / u.coursesAssigned) * 100) : 0;
+      const skills = getAllegoSkills(rep, period);
+      const skillsPrior = getAllegoSkillsPrior(rep, period);
+      const avgScore = averageSkillScore(skills);
+      const priorAvg = averageSkillScore(skillsPrior);
+      const improvement = skillImprovementPct(avgScore, priorAvg);
+      const improvementLabel = improvement >= 0 ? `+${improvement}%` : `${improvement}%`;
+
+      renderNumberKpi(
+        "summaryAllegoCourseCompletion",
+        "Course Completion",
+        `${u.courseCompleted} (${completionPct}%)`,
+        periodLabel,
+        `${u.courseCompleted} of ${u.coursesAssigned} courses`,
+        "summaryCourseCompletion",
+        drill,
+      );
+      renderNumberKpi(
+        "summaryAllegoAvgScore",
+        "Average Score (Skills)",
+        `${avgScore} (${improvementLabel})`,
+        periodLabel,
+        `Prior period: ${priorAvg}`,
+        "summaryAvgSkills",
+        drill,
+      );
+      renderNumberKpi(
+        "summaryAllegoRevenueImpact",
+        "Revenue Impact by DSRs",
+        fmtK(u.revenueImpactDsr),
+        periodLabel,
+        null,
+        "summaryRevenueImpact",
+        drill,
+      );
+    }
+
+    function renderGongSummaryNumbers(rep, period) {
+      const data = getGongForPeriod(rep, period);
+      const periodLabel = period.headerPeriod;
+      const cr = data.callRecording;
+      const inter = data.interactivity;
+      const usage = data.usage;
+      renderNumberKpi("gongSummaryCalls", "Meeting Volume", cr.callVolume.a, periodLabel);
+      renderNumberKpi("gongSummaryPctRecorded", "% Calls Recorded", cr.pctRecorded.a + "%", periodLabel);
+      renderNumberKpi("gongSummaryTalkRatio", "Talk Ratio", inter.talkRatio.a + "%", periodLabel);
+      renderNumberKpi("gongSummaryTime", "Time on Gong", usage.timeOnGong.a + " min", periodLabel);
+      renderNumberKpi("gongSummaryViews", "Recording Views", usage.recordingViews.a, periodLabel);
     }
 
     const SKILL_LABELS = [
@@ -1438,14 +1609,21 @@
       return score >= 80 ? "val-green" : score >= 60 ? "val-amber" : "val-red";
     }
 
-    function renderNumberKpi(boxId, title, value, periodLabel, subtext) {
+    function renderNumberKpi(boxId, title, value, periodLabel, subtext, drillKey, drill) {
       const box = document.getElementById(boxId);
       if (!box) return;
+      const hasDrill = drillKey && drill && drill[drillKey];
       box.innerHTML = `
         <div class="num-kpi__title">${title}</div>
-        <div class="num-kpi__num">${value}</div>
+        <div class="num-kpi__num${hasDrill ? " clickable" : ""}"${hasDrill ? ` data-summary-drill="${drillKey}"` : ""}>${value}</div>
         ${subtext ? `<div class="num-kpi__sub">${subtext}</div>` : ""}
         ${periodLabel ? `<div class="num-kpi__period">${periodLabel}</div>` : ""}`;
+      if (hasDrill) {
+        box.querySelector("[data-summary-drill]").addEventListener("click", () => {
+          const d = drill[drillKey];
+          openModal(d.title, d.headers, d.rows);
+        });
+      }
     }
 
     function renderSkillEvaluation(rep, period) {
@@ -1502,29 +1680,6 @@
       });
     }
 
-    function renderAllegoSummary(rep, period) {
-      const u = getAllegoUsage(rep, period);
-      const periodLabel = period.headerPeriod;
-      renderNumberKpi("summaryAllegoChannel", "Channel Content Views", u.contentChannelViews, periodLabel);
-      renderNumberKpi("summaryAllegoIndividual", "Individual Content Views", u.contentIndividualViews, periodLabel);
-      renderNumberKpi("summaryAllegoDsrCreated", "DSTs Created", u.dsrCreated, periodLabel);
-      renderNumberKpi("summaryAllegoDsrLinked", "DSTs Linked to HubSpot Opps", u.dsrLinkedOpps, periodLabel);
-      renderNumberKpi("summaryAllegoRolePlay", "Role-Play Sessions", u.rolePlayCount, periodLabel);
-    }
-
-    function renderGongSummaryNumbers(rep, period) {
-      const data = getGongForPeriod(rep, period);
-      const periodLabel = period.headerPeriod;
-      const cr = data.callRecording;
-      const inter = data.interactivity;
-      const usage = data.usage;
-      renderNumberKpi("gongSummaryCalls", "Call Volume", cr.callVolume.a, periodLabel);
-      renderNumberKpi("gongSummaryPctRecorded", "% Calls Recorded", cr.pctRecorded.a + "%", periodLabel);
-      renderNumberKpi("gongSummaryTalkRatio", "Talk Ratio", inter.talkRatio.a + "%", periodLabel);
-      renderNumberKpi("gongSummaryTime", "Time on Gong", usage.timeOnGong.a + " min", periodLabel);
-      renderNumberKpi("gongSummaryViews", "Recording Views", usage.recordingViews.a, periodLabel);
-    }
-
     function renderGongKpi(boxId, title, value, periodLabel, drillKey, drill) {
       const box = document.getElementById(boxId);
       if (!box) return;
@@ -1563,7 +1718,7 @@
     function getGongDrillData() {
       return {
         gongCallDuration: { title: "Call Duration — Detail", headers: ["Call", "Duration", "Date"], rows: [["Acme Discovery", "32 min", "2026-06-04"], ["GlobalTech QBR", "45 min", "2026-06-03"]] },
-        gongCallVolume: { title: "Call Volume — Detail", headers: ["Call", "Type", "Date"], rows: [["Acme Discovery", "Discovery", "2026-06-04"], ["StartupHub Intro", "Intro", "2026-06-02"]] },
+        gongCallVolume: { title: "Meeting Volume — Detail", headers: ["Meeting", "Type", "Date"], rows: [["Acme Discovery", "Discovery", "2026-06-04"], ["StartupHub Intro", "Intro", "2026-06-02"]] },
         gongScheduledCalls: { title: "Scheduled Calls — Detail", headers: ["Meeting", "Date", "Status"], rows: [["RetailMax Demo", "2026-06-18", "Scheduled"], ["EduFirst Follow-up", "2026-06-17", "Scheduled"]] },
         gongPctRecorded: { title: "% Call Recorded — Detail", headers: ["Meeting", "Recorded", "Date"], rows: [["Acme Discovery", "Yes", "2026-06-04"], ["StartupHub Intro", "No", "2026-06-02"]] },
         gongTalkRatio: { title: "Talk Ratio — Call Breakdown", headers: ["Call", "Rep Talk %", "Date"], rows: [["Acme Discovery", "40%", "2026-06-04"], ["GlobalTech QBR", "44%", "2026-06-03"]] },
@@ -1714,6 +1869,44 @@
         el.addEventListener("click", () => {
           const r = rows[+el.dataset.pr];
           openModal("Deal — " + r[0], ["Field", "Value"], r.map((v,i) => [["Deal","Stage","Pipeline","Amount","Next Steps"][i], v]).slice(0,5).map(([f,v]) => [f,v]));
+        });
+      });
+    }
+
+    function renderStaleDeals(rep) {
+      const deals = PROFILES[rep].staleDeals || [];
+      const table = document.getElementById("staleDealsTable");
+      if (!table) return;
+      if (!deals.length) {
+        table.innerHTML = `
+          <thead><tr><th>Deal Name</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Last Progress</th><th>Stale Duration</th></tr></thead>
+          <tbody><tr><td colspan="6" style="text-align:center;color:var(--muted);">No stale deals in this period</td></tr></tbody>`;
+        return;
+      }
+      const sorted = [...deals].sort((a, b) => b.staleDays - a.staleDays);
+      table.innerHTML = `
+        <thead><tr><th>Deal Name</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Last Progress</th><th>Stale Duration</th></tr></thead>
+        <tbody>${sorted.map((d, i) => `
+          <tr>
+            <td><span class="clickable" data-stale="${i}">${d.name}</span></td>
+            <td>${d.stage}</td>
+            <td>${d.pipeline}</td>
+            <td>${fmtK(d.amount)}</td>
+            <td>${d.lastProgress}</td>
+            <td><span class="${staleDurationClass(d.staleDays)}">${formatStaleDuration(d.staleDays)}</span></td>
+          </tr>`).join("")}
+        </tbody>`;
+      document.querySelectorAll("#staleDealsTable .clickable").forEach(el => {
+        el.addEventListener("click", () => {
+          const d = sorted[+el.dataset.stale];
+          openModal("Stale Deal — " + d.name, ["Field", "Value"], [
+            ["Deal", d.name],
+            ["Stage", d.stage],
+            ["Pipeline", d.pipeline],
+            ["Amount", fmtK(d.amount)],
+            ["Last Progress", d.lastProgress],
+            ["Stale Duration", formatStaleDuration(d.staleDays)],
+          ]);
         });
       });
     }
@@ -1950,9 +2143,12 @@
           contentChannelViews: { y: 128, q: 32, m: 12, weeks: [3, 9, 8, 12] },
           contentIndividualViews: { y: 64, q: 16, m: 6, weeks: [2, 4, 5, 5] },
           courseCompleted: { y: 14, q: 4, m: 2, weeks: [0, 1, 1, 2] },
+          coursesAssigned: { y: 18, q: 6, m: 3, weeks: [1, 1, 2, 2] },
           dsrCreated: { y: 18, q: 5, m: 2, weeks: [0, 1, 2, 2] },
           dsrLinkedOpps: { y: 11, q: 3, m: 1, weeks: [0, 1, 1, 1] },
           rolePlayCount: { y: 30, q: 8, m: 3, weeks: [1, 2, 2, 3] },
+          revenueImpactDsr: { y: 420, q: 125, m: 45, weeks: [10, 28, 35, 52] },
+          learningTimeHours: { y: 48, q: 14, m: 5, weeks: [1.2, 3.5, 4.0, 5.3] },
         },
         skills: {
           y: [80, 84, 77, 72, 82, 74],
@@ -1965,15 +2161,29 @@
             [76, 82, 74, 69, 79, 71],
           ],
         },
+        skillsPrior: {
+          y: [72, 76, 70, 66, 76, 68],
+          q: [72, 76, 71, 66, 76, 68],
+          m: [70, 74, 69, 64, 74, 66],
+          weeks: [
+            [70, 74, 69, 64, 74, 66],
+            [71, 75, 70, 65, 75, 67],
+            [72, 76, 71, 66, 76, 68],
+            [72, 77, 72, 67, 77, 69],
+          ],
+        },
       },
       james: {
         usage: {
           contentChannelViews: { y: 192, q: 48, m: 18, weeks: [5, 12, 14, 17] },
           contentIndividualViews: { y: 96, q: 24, m: 9, weeks: [3, 6, 7, 8] },
           courseCompleted: { y: 22, q: 6, m: 2, weeks: [1, 1, 2, 2] },
+          coursesAssigned: { y: 24, q: 8, m: 3, weeks: [1, 2, 2, 3] },
           dsrCreated: { y: 32, q: 9, m: 4, weeks: [1, 2, 3, 3] },
           dsrLinkedOpps: { y: 24, q: 7, m: 3, weeks: [1, 2, 2, 2] },
           rolePlayCount: { y: 52, q: 14, m: 5, weeks: [2, 3, 4, 5] },
+          revenueImpactDsr: { y: 680, q: 210, m: 78, weeks: [18, 45, 62, 85] },
+          learningTimeHours: { y: 72, q: 22, m: 8, weeks: [2.0, 5.5, 6.8, 7.7] },
         },
         skills: {
           y: [90, 93, 88, 86, 91, 89],
@@ -1986,15 +2196,29 @@
             [88, 92, 87, 85, 90, 88],
           ],
         },
+        skillsPrior: {
+          y: [84, 87, 82, 80, 85, 83],
+          q: [84, 87, 82, 80, 85, 83],
+          m: [82, 85, 80, 78, 83, 81],
+          weeks: [
+            [82, 86, 81, 79, 84, 82],
+            [83, 87, 82, 80, 85, 83],
+            [84, 88, 83, 81, 86, 84],
+            [84, 88, 84, 82, 86, 85],
+          ],
+        },
       },
       maria: {
         usage: {
           contentChannelViews: { y: 72, q: 18, m: 7, weeks: [2, 5, 5, 6] },
           contentIndividualViews: { y: 40, q: 10, m: 4, weeks: [1, 3, 3, 3] },
           courseCompleted: { y: 6, q: 2, m: 1, weeks: [0, 0, 1, 1] },
+          coursesAssigned: { y: 12, q: 5, m: 2, weeks: [1, 1, 2, 2] },
           dsrCreated: { y: 8, q: 2, m: 1, weeks: [0, 0, 1, 1] },
           dsrLinkedOpps: { y: 5, q: 1, m: 0, weeks: [0, 0, 0, 1] },
           rolePlayCount: { y: 12, q: 3, m: 1, weeks: [0, 1, 1, 1] },
+          revenueImpactDsr: { y: 95, q: 28, m: 12, weeks: [0, 5, 8, 15] },
+          learningTimeHours: { y: 18, q: 6, m: 2, weeks: [0.5, 1.2, 1.8, 2.5] },
         },
         skills: {
           y: [60, 64, 57, 54, 62, 56],
@@ -2005,6 +2229,17 @@
             [53, 57, 50, 47, 55, 49],
             [54, 58, 51, 48, 56, 50],
             [55, 59, 52, 49, 57, 51],
+          ],
+        },
+        skillsPrior: {
+          y: [52, 56, 49, 46, 54, 48],
+          q: [52, 56, 49, 46, 54, 48],
+          m: [50, 54, 47, 44, 52, 46],
+          weeks: [
+            [48, 52, 45, 42, 50, 44],
+            [49, 53, 46, 43, 51, 45],
+            [50, 54, 47, 44, 52, 46],
+            [51, 55, 48, 45, 53, 47],
           ],
         },
       },
@@ -2039,6 +2274,7 @@
         usage: {
           timeOnGong: { suffix: " min", y: 1680, q: 420, m: 145, weeks: [95, 105, 110, 110] },
           recordingViews: { y: 48, q: 12, m: 4, weeks: [2, 3, 3, 4] },
+          learningTimeHours: { y: 28, q: 7, m: 2.4, weeks: [1.6, 1.8, 1.9, 1.7] },
         },
       },
       james: {
@@ -2069,6 +2305,7 @@
         usage: {
           timeOnGong: { suffix: " min", y: 2520, q: 645, m: 220, weeks: [150, 160, 165, 170] },
           recordingViews: { y: 82, q: 22, m: 8, weeks: [4, 5, 6, 7] },
+          learningTimeHours: { y: 42, q: 10.8, m: 3.7, weeks: [2.5, 2.7, 2.8, 2.8] },
         },
       },
       maria: {
@@ -2099,6 +2336,7 @@
         usage: {
           timeOnGong: { suffix: " min", y: 960, q: 245, m: 85, weeks: [55, 60, 65, 65] },
           recordingViews: { y: 22, q: 6, m: 2, weeks: [1, 1, 2, 2] },
+          learningTimeHours: { y: 16, q: 4, m: 1.4, weeks: [0.9, 1.0, 1.1, 1.0] },
         },
       },
     };
@@ -2123,7 +2361,7 @@
       const usage = data.usage;
 
       renderGongKpi("gongCallDuration", "Call Duration", gongMetricValue(cr.callDuration), null, "gongCallDuration", drill);
-      renderGongKpi("gongCallVolume", "Call Volume", gongMetricValue(cr.callVolume), null, "gongCallVolume", drill);
+      renderGongKpi("gongCallVolume", "Meeting Volume", gongMetricValue(cr.callVolume), null, "gongCallVolume", drill);
       renderGongKpi("gongScheduledCalls", "# of Scheduled Calls", gongMetricValue(cr.scheduledCalls), null, "gongScheduledCalls", drill);
       renderGongKpi("gongPctRecorded", "% of Calls Recorded", gongMetricValue(cr.pctRecorded), null, "gongPctRecorded", drill);
 
@@ -2240,13 +2478,14 @@
 
       if (activeTab === "scorecard") {
         renderCombinedScorecard(rep, drill, table1Period, table2Period, period);
-        renderElsaKpis(rep, drill, period);
-        renderAllegoSummary(rep, period);
+        renderLearningTime(rep, drill, period);
+        renderAllegoSummary(rep, period, drill);
         renderGongSummaryNumbers(rep, period);
       } else if (activeTab === "hubspot") {
         renderWonDealsCombined(rep, drill, period);
         renderOpenCoverage(rep, drill, period);
         renderProgressed(drill);
+        renderStaleDeals(rep);
         renderPipelineKpis(rep, period, drill);
         renderHubspotActivities(rep, drill, period);
         renderCharts(rep, period);
