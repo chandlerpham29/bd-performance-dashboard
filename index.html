@@ -263,6 +263,126 @@
       border: 1px solid var(--red-border);
     }
 
+    .action-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .action-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      border-left: 4px solid var(--border);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .action-card:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2); }
+    .action-card--green { border-left-color: var(--green); }
+    .action-card--amber { border-left-color: var(--amber); }
+    .action-card--red { border-left-color: var(--red); }
+    .action-card__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .action-card__badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      background: rgba(96, 165, 250, 0.12);
+      border: 1px solid rgba(96, 165, 250, 0.28);
+      border-radius: 6px;
+      padding: 0.2rem 0.55rem;
+    }
+    .traffic-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .traffic-dot--green { background: var(--green); box-shadow: 0 0 8px rgba(52, 211, 153, 0.5); }
+    .traffic-dot--amber { background: var(--amber); box-shadow: 0 0 8px rgba(251, 191, 36, 0.5); }
+    .traffic-dot--red { background: var(--red); box-shadow: 0 0 8px rgba(248, 113, 113, 0.5); }
+    .action-card__label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .action-card__value {
+      font-size: 1.85rem;
+      font-weight: 700;
+      line-height: 1.15;
+      align-self: flex-start;
+    }
+    .action-card__value.clickable { cursor: pointer; }
+    .action-card__meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .action-card__hint {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 0.15rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid var(--border);
+      line-height: 1.35;
+    }
+    .action-card__hint--warn { color: #fcd34d; }
+    .action-card__hint--critical { color: #fca5a5; }
+
+    .deal-health-kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 900px) { .deal-health-kpis { grid-template-columns: repeat(2, 1fr); } }
+    .deal-health-kpi {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.15rem;
+      text-align: center;
+      border-top: 3px solid var(--border);
+    }
+    .deal-health-kpi--green { border-top-color: var(--green); }
+    .deal-health-kpi--amber { border-top-color: var(--amber); }
+    .deal-health-kpi--red { border-top-color: var(--red); }
+    .deal-health-kpi__num { font-size: 2rem; font-weight: 700; color: var(--text); }
+    .deal-health-kpi__label { font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.35rem; }
+
+    .kpi-traffic {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.1;
+      padding: 0.2rem 0.65rem;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .kpi-traffic.val-green { color: #6ee7b7; background: var(--green-bg); border: 2px solid var(--green-border); }
+    .kpi-traffic.val-amber { color: #fcd34d; background: var(--amber-bg); border: 2px solid var(--amber-border); }
+    .kpi-traffic.val-red { color: #fca5a5; background: var(--red-bg); border: 2px solid var(--red-border); }
+    .num-kpi .num-kpi__status {
+      font-size: 0.68rem;
+      font-weight: 600;
+      margin-top: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .num-kpi .num-kpi__status--green { color: var(--green); }
+    .num-kpi .num-kpi__status--amber { color: var(--amber); }
+    .num-kpi .num-kpi__status--red { color: var(--red); }
+
     .chart-box {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -621,31 +741,17 @@
 
     <section class="section-highlight">
       <h2>Learning Time</h2>
-      <div class="summary-kpi-row">
-        <div class="num-kpi num-kpi--compact" id="learningTimeElsa"></div>
-        <div class="num-kpi num-kpi--compact" id="learningTimeAllego"></div>
-        <div class="num-kpi num-kpi--compact" id="learningTimeGong"></div>
-      </div>
+      <div class="action-panel" id="learningTimePanel"></div>
     </section>
 
     <section class="section-highlight">
       <h2>Allego</h2>
-      <div class="summary-kpi-row">
-        <div class="num-kpi num-kpi--compact" id="summaryAllegoCourseCompletion"></div>
-        <div class="num-kpi num-kpi--compact" id="summaryAllegoAvgScore"></div>
-        <div class="num-kpi num-kpi--compact" id="summaryAllegoRevenueImpact"></div>
-      </div>
+      <div class="action-panel" id="allegoSummaryPanel"></div>
     </section>
 
     <section class="section-highlight">
       <h2>Gong</h2>
-      <div class="summary-kpi-row">
-        <div class="num-kpi num-kpi--compact" id="gongSummaryCalls"></div>
-        <div class="num-kpi num-kpi--compact" id="gongSummaryPctRecorded"></div>
-        <div class="num-kpi num-kpi--compact" id="gongSummaryTalkRatio"></div>
-        <div class="num-kpi num-kpi--compact" id="gongSummaryTime"></div>
-        <div class="num-kpi num-kpi--compact" id="gongSummaryViews"></div>
-      </div>
+      <div class="action-panel" id="gongSummaryPanel"></div>
     </section>
   </main>
 
@@ -704,17 +810,34 @@
         </div>
       </div>
 
-      <div class="row-line row-line--full">
+    </section>
+
+    <section class="section-highlight">
+      <h2>Deal Health &amp; Pipeline Management</h2>
+      <div class="deal-health-kpis" id="dealHealthSummary"></div>
+
+      <div class="row-line">
         <div class="row-line__cell">
           <h3>Deals Progressed in Stage</h3>
           <div class="scorecard-wrap"><table class="data-table" id="progressedTable"></table></div>
+        </div>
+        <div class="row-line__cell">
+          <h3>Stale Deals — No Progress in Period</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="staleDealsTable"></table></div>
         </div>
       </div>
 
       <div class="row-line row-line--full">
         <div class="row-line__cell">
-          <h3>Stale Deals — No Progress in Period</h3>
-          <div class="scorecard-wrap"><table class="data-table" id="staleDealsTable"></table></div>
+          <h3>Deals Expiring in Period</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="expiringDealsTable"></table></div>
+        </div>
+      </div>
+
+      <div class="row-line row-line--full">
+        <div class="row-line__cell">
+          <h3>Current Open Deals</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="openDealsTable"></table></div>
         </div>
       </div>
     </section>
@@ -770,10 +893,10 @@
   </main>
 
   <main id="tabGong" class="tab-panel" role="tabpanel" hidden>
-    <p class="placeholder-note">Gong — conversation intelligence &amp; call analytics (demo data)</p>
+    <p class="placeholder-note">Gong — conversation intelligence &amp; meeting analytics (demo data)</p>
 
     <section class="section-highlight">
-      <h2>Call Recording</h2>
+      <h2>Meeting Recording</h2>
       <div class="gong-metrics-grid">
         <div class="num-kpi gong-kpi" id="gongCallDuration"></div>
         <div class="num-kpi gong-kpi" id="gongCallVolume"></div>
@@ -834,6 +957,49 @@
     function attClass(pct) { return pct >= 80 ? "val-green" : pct >= 60 ? "val-amber" : "val-red"; }
     function covClass(x) { return x >= 3 ? "val-green" : x >= 2 ? "val-amber" : "val-red"; }
     function trafficTarget(actual, target) { return actual >= target ? "val-green" : "val-red"; }
+
+    function trafficLevel(ratio) {
+      if (ratio >= 0.9) return "green";
+      if (ratio >= 0.7) return "amber";
+      return "red";
+    }
+
+    function trafficLevelInverse(ratio) {
+      if (ratio <= 1.0) return "green";
+      if (ratio <= 1.2) return "amber";
+      return "red";
+    }
+
+    function trafficClass(level) {
+      return level === "green" ? "val-green" : level === "amber" ? "val-amber" : "val-red";
+    }
+
+    function trafficStatusLabel(level) {
+      return level === "green" ? "On track" : level === "amber" ? "Needs attention" : "At risk";
+    }
+
+    function renderActionPanel(containerId, cards, drill) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      el.innerHTML = cards.map(c => `
+        <div class="action-card action-card--${c.status}">
+          <div class="action-card__header">
+            <span class="action-card__badge">${c.badge}</span>
+            <span class="traffic-dot traffic-dot--${c.status}" title="${trafficStatusLabel(c.status)}"></span>
+          </div>
+          <div class="action-card__label">${c.label}</div>
+          <div class="action-card__value ${trafficClass(c.status)}${c.drillKey ? " clickable" : ""}"${c.drillKey ? ` data-action-drill="${c.drillKey}"` : ""}>${c.value}</div>
+          <div class="action-card__meta">${c.meta}</div>
+          ${c.action ? `<div class="action-card__hint action-card__hint--${c.status === "red" ? "critical" : c.status === "amber" ? "warn" : ""}">${c.action}</div>` : ""}
+        </div>
+      `).join("");
+      el.querySelectorAll("[data-action-drill]").forEach(node => {
+        node.addEventListener("click", () => {
+          const d = drill[node.dataset.actionDrill];
+          if (d) openModal(d.title, d.headers, d.rows);
+        });
+      });
+    }
     function gapAttClass(gap, quota) { const pct = Math.max(0, Math.round((1 - gap / quota) * 100)); return { cls: attClass(pct), pct }; }
     function fmtK(n) { return "$" + n + "K"; }
     function pct(a, t) { return t ? Math.round((a / t) * 100) : 0; }
@@ -938,6 +1104,17 @@
           { name: "UniConnect APAC", stage: "Trial Active", pipeline: "New Business", amount: 18, lastProgress: "2026-05-02", staleDays: 34 },
           { name: "LegalEdge Partners", stage: "Qualified", pipeline: "New Business", amount: 16, lastProgress: "2026-05-28", staleDays: 8 },
         ],
+        expiringDeals: [
+          { name: "Acme Corp — Enterprise", stage: "Proposal", pipeline: "New Business", amount: 45, closeDate: "2026-06-28", daysLeft: 8 },
+          { name: "StartupHub Co", stage: "Qualified", pipeline: "New Business", amount: 14, closeDate: "2026-06-20", daysLeft: 0 },
+        ],
+        openDeals: [
+          { name: "Acme Corp — Enterprise", stage: "Proposal", pipeline: "New Business", amount: 45, forecast: "Commit", closeDate: "2026-06-28", nextStep: "Send revised pricing" },
+          { name: "GlobalTech Ltd", stage: "Negotiation", pipeline: "Expansion", amount: 62, forecast: "Commit", closeDate: "2026-07-15", nextStep: "Legal review" },
+          { name: "RetailMax Group", stage: "Demo Scheduled", pipeline: "New Business", amount: 24, forecast: "Pipeline", closeDate: "2026-08-10", nextStep: "Run demo" },
+          { name: "MedHealth Group", stage: "Demo Completed", pipeline: "New Business", amount: 38, forecast: "Best Case", closeDate: "2026-07-22", nextStep: "Schedule exec call" },
+          { name: "UniConnect APAC", stage: "Trial Active", pipeline: "New Business", amount: 18, forecast: "Pipeline", closeDate: "2026-09-05", nextStep: "Trial check-in" },
+        ],
       },
       james: {
         t1: { quota: 300, booked: 264, gap: 36 },
@@ -1007,6 +1184,16 @@
         staleDeals: [
           { name: "Pacific Airlines Training", stage: "Proposal", pipeline: "New Business", amount: 28, lastProgress: "2026-03-22", staleDays: 75 },
           { name: "FinServe APAC Renewal", stage: "Negotiation", pipeline: "Expansion", amount: 42, lastProgress: "2026-05-10", staleDays: 26 },
+        ],
+        expiringDeals: [
+          { name: "FinServe APAC Renewal", stage: "Negotiation", pipeline: "Expansion", amount: 42, closeDate: "2026-06-25", daysLeft: 5 },
+          { name: "CloudNine SaaS", stage: "Proposal", pipeline: "New Business", amount: 55, closeDate: "2026-06-30", daysLeft: 10 },
+        ],
+        openDeals: [
+          { name: "FinServe APAC Renewal", stage: "Negotiation", pipeline: "Expansion", amount: 42, forecast: "Commit", closeDate: "2026-06-25", nextStep: "Final pricing approval" },
+          { name: "CloudNine SaaS", stage: "Proposal", pipeline: "New Business", amount: 55, forecast: "Commit", closeDate: "2026-06-30", nextStep: "Exec sponsor meeting" },
+          { name: "Pacific Airlines Training", stage: "Proposal", pipeline: "New Business", amount: 28, forecast: "Pipeline", closeDate: "2026-08-18", nextStep: "Re-engage champion" },
+          { name: "DataStream Inc", stage: "Demo Completed", pipeline: "New Business", amount: 72, forecast: "Best Case", closeDate: "2026-07-08", nextStep: "Trial kickoff" },
         ],
       },
       maria: {
@@ -1078,6 +1265,14 @@
           { name: "Horizon Bank — Enterprise", stage: "Proposal", pipeline: "New Business", amount: 35, lastProgress: "2026-02-14", staleDays: 112 },
           { name: "EduFirst Academy", stage: "Discovery", pipeline: "New Business", amount: 22, lastProgress: "2026-04-05", staleDays: 61 },
           { name: "MedHealth Group", stage: "Demo Completed", pipeline: "New Business", amount: 38, lastProgress: "2026-05-24", staleDays: 12 },
+        ],
+        expiringDeals: [
+          { name: "EduFirst Academy", stage: "Discovery", pipeline: "New Business", amount: 22, closeDate: "2026-06-22", daysLeft: 2 },
+        ],
+        openDeals: [
+          { name: "Horizon Bank — Enterprise", stage: "Proposal", pipeline: "New Business", amount: 35, forecast: "Pipeline", closeDate: "2026-09-30", nextStep: "Re-engage economic buyer" },
+          { name: "EduFirst Academy", stage: "Discovery", pipeline: "New Business", amount: 22, forecast: "Pipeline", closeDate: "2026-06-22", nextStep: "Book discovery call" },
+          { name: "MedHealth Group", stage: "Demo Completed", pipeline: "New Business", amount: 38, forecast: "Best Case", closeDate: "2026-07-30", nextStep: "Follow up post-demo" },
         ],
       },
     };
@@ -1500,43 +1695,53 @@
       const elsaVal = getElsaValue(PROFILES[rep].elsa, period);
       const allego = getAllegoUsage(rep, period);
       const gongUsage = getGongForPeriod(rep, period).usage;
-      const periodLabel = period.headerPeriod;
       const elsaHours = formatLearningHours(elsaVal.minutes, true);
       const allegoHours = formatLearningHours(allego.learningTimeHours, false);
       const gongHours = formatLearningHours(gongUsage.learningTimeHours.a, false);
 
-      renderNumberKpi(
-        "learningTimeElsa",
-        "Total Learning Time in ELSA App",
-        `${elsaVal.sessions} times · ${elsaHours}`,
-        periodLabel,
-        null,
-        "learningTimeElsa",
-        drill,
-      );
-      renderNumberKpi(
-        "learningTimeAllego",
-        "Total Learning Time in Allego",
-        allegoHours,
-        periodLabel,
-        null,
-        "learningTimeAllego",
-        drill,
-      );
-      renderNumberKpi(
-        "learningTimeGong",
-        "Total Learning Time in Gong",
-        gongHours,
-        periodLabel,
-        null,
-        "learningTimeGong",
-        drill,
-      );
+      const elsaSessionTarget = period.type === "year" ? 50 : period.type === "quarter" ? 30 : period.type === "month" ? 10 : 3;
+      const elsaHourTarget = period.type === "year" ? 10 : period.type === "quarter" ? 6 : period.type === "month" ? 2 : 0.5;
+      const allegoHourTarget = period.type === "year" ? 12 : period.type === "quarter" ? 8 : period.type === "month" ? 3 : 1;
+      const gongHourTarget = period.type === "year" ? 8 : period.type === "quarter" ? 5 : period.type === "month" ? 2 : 0.5;
+
+      const elsaHoursNum = elsaVal.minutes / 60;
+      const elsaRatio = Math.min(elsaVal.sessions / elsaSessionTarget, elsaHoursNum / elsaHourTarget);
+      const allegoRatio = allego.learningTimeHours / allegoHourTarget;
+      const gongRatio = gongUsage.learningTimeHours.a / gongHourTarget;
+
+      renderActionPanel("learningTimePanel", [
+        {
+          badge: "ELSA",
+          label: "Sessions & Hours",
+          value: `${elsaVal.sessions} sessions · ${elsaHours}`,
+          meta: `Target: ${elsaSessionTarget} sessions · ${elsaHourTarget} hrs`,
+          status: trafficLevel(elsaRatio),
+          action: elsaRatio < 0.7 ? "Schedule 2+ practice sessions this week" : "Keep current learning cadence",
+          drillKey: "learningTimeElsa",
+        },
+        {
+          badge: "Allego",
+          label: "Hours Invested",
+          value: allegoHours,
+          meta: `Target: ${allegoHourTarget} hrs`,
+          status: trafficLevel(allegoRatio),
+          action: allegoRatio < 0.7 ? "Complete 1 assigned course module" : "On pace — continue assigned content",
+          drillKey: "learningTimeAllego",
+        },
+        {
+          badge: "Gong",
+          label: "Hours Invested",
+          value: gongHours,
+          meta: `Target: ${gongHourTarget} hrs`,
+          status: trafficLevel(gongRatio),
+          action: gongRatio < 0.7 ? "Review 2 recorded meetings for coaching" : "Strong engagement with meeting reviews",
+          drillKey: "learningTimeGong",
+        },
+      ], drill);
     }
 
     function renderAllegoSummary(rep, period, drill) {
       const u = getAllegoUsage(rep, period);
-      const periodLabel = period.headerPeriod;
       const completionPct = u.coursesAssigned ? Math.round((u.courseCompleted / u.coursesAssigned) * 100) : 0;
       const skills = getAllegoSkills(rep, period);
       const skillsPrior = getAllegoSkillsPrior(rep, period);
@@ -1545,46 +1750,95 @@
       const improvement = skillImprovementPct(avgScore, priorAvg);
       const improvementLabel = improvement >= 0 ? `+${improvement}%` : `${improvement}%`;
 
-      renderNumberKpi(
-        "summaryAllegoCourseCompletion",
-        "Course Completion",
-        `${u.courseCompleted} (${completionPct}%)`,
-        periodLabel,
-        `${u.courseCompleted} of ${u.coursesAssigned} courses`,
-        "summaryCourseCompletion",
-        drill,
-      );
-      renderNumberKpi(
-        "summaryAllegoAvgScore",
-        "Average Score (Skills)",
-        `${avgScore} (${improvementLabel})`,
-        periodLabel,
-        `Prior period: ${priorAvg}`,
-        "summaryAvgSkills",
-        drill,
-      );
-      renderNumberKpi(
-        "summaryAllegoRevenueImpact",
-        "Revenue Impact by DSRs",
-        fmtK(u.revenueImpactDsr),
-        periodLabel,
-        null,
-        "summaryRevenueImpact",
-        drill,
-      );
+      const completionTarget = 80;
+      const scoreTarget = 75;
+      const revenueTarget = period.type === "year" ? 300 : period.type === "quarter" ? 100 : period.type === "month" ? 35 : 10;
+
+      renderActionPanel("allegoSummaryPanel", [
+        {
+          badge: "Completion",
+          label: "Courses Completed",
+          value: `${u.courseCompleted} (${completionPct}%)`,
+          meta: `Target: ${completionTarget}% · ${u.courseCompleted} of ${u.coursesAssigned} courses`,
+          status: trafficLevel(completionPct / completionTarget),
+          action: completionPct < completionTarget ? "Finish in-progress courses before period end" : "Course completion on track",
+          drillKey: "summaryCourseCompletion",
+        },
+        {
+          badge: "Skills",
+          label: "Average Score",
+          value: `${avgScore} (${improvementLabel})`,
+          meta: `Target: ${scoreTarget} · Prior period: ${priorAvg}`,
+          status: trafficLevel(avgScore / scoreTarget),
+          action: avgScore < scoreTarget ? "Focus role-play on weakest skill area" : "Skill scores trending positively",
+          drillKey: "summaryAvgSkills",
+        },
+        {
+          badge: "DSR Impact",
+          label: "Revenue Impact",
+          value: fmtK(u.revenueImpactDsr),
+          meta: `Target: ${fmtK(revenueTarget)}`,
+          status: trafficLevel(u.revenueImpactDsr / revenueTarget),
+          action: u.revenueImpactDsr < revenueTarget ? "Link DSRs to top open opportunities" : "DSR pipeline contribution is healthy",
+          drillKey: "summaryRevenueImpact",
+        },
+      ], drill);
     }
 
     function renderGongSummaryNumbers(rep, period) {
       const data = getGongForPeriod(rep, period);
-      const periodLabel = period.headerPeriod;
       const cr = data.callRecording;
       const inter = data.interactivity;
       const usage = data.usage;
-      renderNumberKpi("gongSummaryCalls", "Meeting Volume", cr.callVolume.a, periodLabel);
-      renderNumberKpi("gongSummaryPctRecorded", "% Calls Recorded", cr.pctRecorded.a + "%", periodLabel);
-      renderNumberKpi("gongSummaryTalkRatio", "Talk Ratio", inter.talkRatio.a + "%", periodLabel);
-      renderNumberKpi("gongSummaryTime", "Time on Gong", usage.timeOnGong.a + " min", periodLabel);
-      renderNumberKpi("gongSummaryViews", "Recording Views", usage.recordingViews.a, periodLabel);
+
+      const volumeTarget = period.type === "year" ? 80 : period.type === "quarter" ? 22 : period.type === "month" ? 8 : 5;
+      const recordedTarget = 80;
+      const talkTarget = 45;
+      const timeTarget = period.type === "year" ? 1200 : period.type === "quarter" ? 350 : period.type === "month" ? 120 : 90;
+      const viewsTarget = period.type === "year" ? 40 : period.type === "quarter" ? 10 : period.type === "month" ? 4 : 2;
+
+      renderActionPanel("gongSummaryPanel", [
+        {
+          badge: "Volume",
+          label: "Meetings Held",
+          value: cr.callVolume.a,
+          meta: `Target: ${volumeTarget} meetings`,
+          status: trafficLevel(cr.callVolume.a / volumeTarget),
+          action: cr.callVolume.a < volumeTarget ? "Increase outbound meeting activity" : "Meeting volume on track",
+        },
+        {
+          badge: "Recording",
+          label: "% Meetings Recorded",
+          value: cr.pctRecorded.a + "%",
+          meta: `Target: ${recordedTarget}%`,
+          status: trafficLevel(cr.pctRecorded.a / recordedTarget),
+          action: cr.pctRecorded.a < recordedTarget ? "Enable recording on upcoming meetings" : "Recording coverage is strong",
+        },
+        {
+          badge: "Interactivity",
+          label: "Talk Ratio",
+          value: inter.talkRatio.a + "%",
+          meta: `Target: ≤ ${talkTarget}% rep talk`,
+          status: trafficLevelInverse(inter.talkRatio.a / talkTarget),
+          action: inter.talkRatio.a > talkTarget ? "Ask more discovery questions; reduce monologues" : "Balanced rep-to-buyer talk ratio",
+        },
+        {
+          badge: "Engagement",
+          label: "Time on Gong",
+          value: usage.timeOnGong.a + " min",
+          meta: `Target: ${timeTarget} min`,
+          status: trafficLevel(usage.timeOnGong.a / timeTarget),
+          action: usage.timeOnGong.a < timeTarget ? "Block 30 min for meeting review & coaching" : "Active Gong usage this period",
+        },
+        {
+          badge: "Coaching",
+          label: "Recording Views",
+          value: usage.recordingViews.a,
+          meta: `Target: ${viewsTarget} views`,
+          status: trafficLevel(usage.recordingViews.a / viewsTarget),
+          action: usage.recordingViews.a < viewsTarget ? "Review top 3 recent meetings this week" : "Consistent coaching review habit",
+        },
+      ], {});
     }
 
     const SKILL_LABELS = [
@@ -1680,13 +1934,16 @@
       });
     }
 
-    function renderGongKpi(boxId, title, value, periodLabel, drillKey, drill) {
+    function renderGongKpi(boxId, title, value, periodLabel, drillKey, drill, status) {
       const box = document.getElementById(boxId);
       if (!box) return;
       const hasDrill = drillKey && drill && drill[drillKey];
+      const statusCls = status ? trafficClass(status) : "";
+      const statusLabel = status ? trafficStatusLabel(status) : "";
       box.innerHTML = `
         <div class="num-kpi__title">${title}</div>
-        <div class="num-kpi__num${hasDrill ? " clickable" : ""}" data-gong-drill="${drillKey || ""}">${value}</div>
+        <div class="num-kpi__num kpi-traffic ${statusCls}${hasDrill ? " clickable" : ""}" data-gong-drill="${drillKey || ""}">${value}</div>
+        ${status ? `<div class="num-kpi__status num-kpi__status--${status}">${statusLabel}</div>` : ""}
         ${periodLabel ? `<div class="num-kpi__period">${periodLabel}</div>` : ""}`;
       if (hasDrill) {
         box.querySelector("[data-gong-drill]").addEventListener("click", () => {
@@ -1696,13 +1953,17 @@
       }
     }
 
-    function renderAllegoKpi(boxId, title, value, drillKey, drill) {
+    function renderAllegoKpi(boxId, title, value, drillKey, drill, status, targetLabel) {
       const box = document.getElementById(boxId);
       if (!box) return;
       const hasDrill = drillKey && drill && drill[drillKey];
+      const statusCls = status ? trafficClass(status) : "";
+      const statusLabel = status ? trafficStatusLabel(status) : "";
       box.innerHTML = `
         <div class="num-kpi__title">${title}</div>
-        <div class="num-kpi__num${hasDrill ? " clickable" : ""}" data-allego-drill="${drillKey || ""}">${value}</div>`;
+        <div class="num-kpi__num kpi-traffic ${statusCls}${hasDrill ? " clickable" : ""}" data-allego-drill="${drillKey || ""}">${value}</div>
+        ${targetLabel ? `<div class="num-kpi__period">${targetLabel}</div>` : ""}
+        ${status ? `<div class="num-kpi__status num-kpi__status--${status}">${statusLabel}</div>` : ""}`;
       if (hasDrill) {
         box.querySelector("[data-allego-drill]").addEventListener("click", () => {
           const d = drill[drillKey];
@@ -1717,16 +1978,16 @@
 
     function getGongDrillData() {
       return {
-        gongCallDuration: { title: "Call Duration — Detail", headers: ["Call", "Duration", "Date"], rows: [["Acme Discovery", "32 min", "2026-06-04"], ["GlobalTech QBR", "45 min", "2026-06-03"]] },
+        gongCallDuration: { title: "Meeting Duration — Detail", headers: ["Meeting", "Duration", "Date"], rows: [["Acme Discovery", "32 min", "2026-06-04"], ["GlobalTech QBR", "45 min", "2026-06-03"]] },
         gongCallVolume: { title: "Meeting Volume — Detail", headers: ["Meeting", "Type", "Date"], rows: [["Acme Discovery", "Discovery", "2026-06-04"], ["StartupHub Intro", "Intro", "2026-06-02"]] },
-        gongScheduledCalls: { title: "Scheduled Calls — Detail", headers: ["Meeting", "Date", "Status"], rows: [["RetailMax Demo", "2026-06-18", "Scheduled"], ["EduFirst Follow-up", "2026-06-17", "Scheduled"]] },
-        gongPctRecorded: { title: "% Call Recorded — Detail", headers: ["Meeting", "Recorded", "Date"], rows: [["Acme Discovery", "Yes", "2026-06-04"], ["StartupHub Intro", "No", "2026-06-02"]] },
-        gongTalkRatio: { title: "Talk Ratio — Call Breakdown", headers: ["Call", "Rep Talk %", "Date"], rows: [["Acme Discovery", "40%", "2026-06-04"], ["GlobalTech QBR", "44%", "2026-06-03"]] },
-        gongLongestMonologue: { title: "Longest Monologue — Detail", headers: ["Call", "Duration", "Date"], rows: [["Acme Discovery", "2.4 min", "2026-06-04"], ["GlobalTech QBR", "3.1 min", "2026-06-03"]] },
-        gongLongestCustomerStory: { title: "Longest Customer Story — Detail", headers: ["Call", "Duration", "Date"], rows: [["Acme Discovery", "4.8 min", "2026-06-04"], ["MedHealth Demo", "3.2 min", "2026-05-24"]] },
-        gongPatienceTime: { title: "Patience Time — Detail", headers: ["Call", "Avg Pause", "Date"], rows: [["Acme Discovery", "1.1 sec", "2026-06-04"], ["GlobalTech QBR", "1.4 sec", "2026-06-03"]] },
-        gongQuestionRate: { title: "Question Rate — Detail", headers: ["Call", "Questions", "Date"], rows: [["Acme Discovery", "9", "2026-06-04"], ["GlobalTech QBR", "7", "2026-06-03"]] },
-        gongTimeSpent: { title: "Time Spent on Gong — Detail", headers: ["Date", "Activity", "Minutes"], rows: [["2026-06-04", "Call review", "45"], ["2026-06-03", "Coaching", "38"]] },
+        gongScheduledCalls: { title: "Scheduled Meetings — Detail", headers: ["Meeting", "Date", "Status"], rows: [["RetailMax Demo", "2026-06-18", "Scheduled"], ["EduFirst Follow-up", "2026-06-17", "Scheduled"]] },
+        gongPctRecorded: { title: "% Meeting Recorded — Detail", headers: ["Meeting", "Recorded", "Date"], rows: [["Acme Discovery", "Yes", "2026-06-04"], ["StartupHub Intro", "No", "2026-06-02"]] },
+        gongTalkRatio: { title: "Talk Ratio — Meeting Breakdown", headers: ["Meeting", "Rep Talk %", "Date"], rows: [["Acme Discovery", "40%", "2026-06-04"], ["GlobalTech QBR", "44%", "2026-06-03"]] },
+        gongLongestMonologue: { title: "Longest Monologue — Detail", headers: ["Meeting", "Duration", "Date"], rows: [["Acme Discovery", "2.4 min", "2026-06-04"], ["GlobalTech QBR", "3.1 min", "2026-06-03"]] },
+        gongLongestCustomerStory: { title: "Longest Customer Story — Detail", headers: ["Meeting", "Duration", "Date"], rows: [["Acme Discovery", "4.8 min", "2026-06-04"], ["MedHealth Demo", "3.2 min", "2026-05-24"]] },
+        gongPatienceTime: { title: "Patience Time — Detail", headers: ["Meeting", "Avg Pause", "Date"], rows: [["Acme Discovery", "1.1 sec", "2026-06-04"], ["GlobalTech QBR", "1.4 sec", "2026-06-03"]] },
+        gongQuestionRate: { title: "Question Rate — Detail", headers: ["Meeting", "Questions", "Date"], rows: [["Acme Discovery", "9", "2026-06-04"], ["GlobalTech QBR", "7", "2026-06-03"]] },
+        gongTimeSpent: { title: "Time Spent on Gong — Detail", headers: ["Date", "Activity", "Minutes"], rows: [["2026-06-04", "Meeting review", "45"], ["2026-06-03", "Coaching", "38"]] },
         gongRecordingViews: { title: "Recording Views — Detail", headers: ["Recording", "Views", "Date"], rows: [["Acme Discovery", "3", "2026-06-04"], ["GlobalTech QBR", "2", "2026-06-03"]] },
       };
     }
@@ -1869,6 +2130,111 @@
         el.addEventListener("click", () => {
           const r = rows[+el.dataset.pr];
           openModal("Deal — " + r[0], ["Field", "Value"], r.map((v,i) => [["Deal","Stage","Pipeline","Amount","Next Steps"][i], v]).slice(0,5).map(([f,v]) => [f,v]));
+        });
+      });
+    }
+
+    function expiryDurationClass(days) {
+      if (days <= 3) return "stale-duration stale-duration--critical";
+      if (days <= 7) return "stale-duration stale-duration--warn";
+      return "stale-duration";
+    }
+
+    function formatExpiryDays(days) {
+      if (days <= 0) return "Today";
+      if (days === 1) return "1 day left";
+      return `${days} days left`;
+    }
+
+    function renderDealHealthSummary(rep) {
+      const profile = PROFILES[rep];
+      const progressed = 3;
+      const stale = (profile.staleDeals || []).length;
+      const expiring = (profile.expiringDeals || []).length;
+      const open = (profile.openDeals || []).length;
+      const staleStatus = stale >= 3 ? "red" : stale >= 1 ? "amber" : "green";
+      const expiringStatus = expiring >= 2 ? "red" : expiring >= 1 ? "amber" : "green";
+      const el = document.getElementById("dealHealthSummary");
+      if (!el) return;
+      el.innerHTML = [
+        { num: progressed, label: "Deals Progressed", status: "green" },
+        { num: stale, label: "Stale Deals", status: staleStatus },
+        { num: expiring, label: "Expiring in Period", status: expiringStatus },
+        { num: open, label: "Open Deals", status: "green" },
+      ].map(k => `
+        <div class="deal-health-kpi deal-health-kpi--${k.status}">
+          <div class="deal-health-kpi__num">${k.num}</div>
+          <div class="deal-health-kpi__label">${k.label}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderExpiringDeals(rep) {
+      const deals = PROFILES[rep].expiringDeals || [];
+      const table = document.getElementById("expiringDealsTable");
+      if (!table) return;
+      if (!deals.length) {
+        table.innerHTML = `
+          <thead><tr><th>Deal Name</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Close Date</th><th>Time to Close</th></tr></thead>
+          <tbody><tr><td colspan="6" style="text-align:center;color:var(--muted);">No deals expiring in this period</td></tr></tbody>`;
+        return;
+      }
+      const sorted = [...deals].sort((a, b) => a.daysLeft - b.daysLeft);
+      table.innerHTML = `
+        <thead><tr><th>Deal Name</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Close Date</th><th>Time to Close</th></tr></thead>
+        <tbody>${sorted.map((d, i) => `
+          <tr>
+            <td><span class="clickable" data-exp="${i}">${d.name}</span></td>
+            <td>${d.stage}</td>
+            <td>${d.pipeline}</td>
+            <td>${fmtK(d.amount)}</td>
+            <td>${d.closeDate}</td>
+            <td><span class="${expiryDurationClass(d.daysLeft)}">${formatExpiryDays(d.daysLeft)}</span></td>
+          </tr>`).join("")}
+        </tbody>`;
+      document.querySelectorAll("#expiringDealsTable .clickable").forEach(el => {
+        el.addEventListener("click", () => {
+          const d = sorted[+el.dataset.exp];
+          openModal("Expiring Deal — " + d.name, ["Field", "Value"], [
+            ["Deal", d.name], ["Stage", d.stage], ["Pipeline", d.pipeline],
+            ["Amount", fmtK(d.amount)], ["Close Date", d.closeDate],
+            ["Time to Close", formatExpiryDays(d.daysLeft)],
+          ]);
+        });
+      });
+    }
+
+    function renderOpenDeals(rep) {
+      const deals = PROFILES[rep].openDeals || [];
+      const table = document.getElementById("openDealsTable");
+      if (!table) return;
+      if (!deals.length) {
+        table.innerHTML = `
+          <thead><tr><th>Deal Name</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Forecast</th><th>Close Date</th><th>Next Steps</th></tr></thead>
+          <tbody><tr><td colspan="7" style="text-align:center;color:var(--muted);">No open deals</td></tr></tbody>`;
+        return;
+      }
+      table.innerHTML = `
+        <thead><tr><th>Deal Name</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Forecast</th><th>Close Date</th><th>Next Steps</th></tr></thead>
+        <tbody>${deals.map((d, i) => `
+          <tr>
+            <td><span class="clickable" data-open="${i}">${d.name}</span></td>
+            <td>${d.stage}</td>
+            <td>${d.pipeline}</td>
+            <td>${fmtK(d.amount)}</td>
+            <td><span class="${d.forecast === "Commit" ? "val-green" : d.forecast === "Best Case" ? "val-amber" : "val-red"}">${d.forecast}</span></td>
+            <td>${d.closeDate}</td>
+            <td>${d.nextStep}</td>
+          </tr>`).join("")}
+        </tbody>`;
+      document.querySelectorAll("#openDealsTable .clickable").forEach(el => {
+        el.addEventListener("click", () => {
+          const d = deals[+el.dataset.open];
+          openModal("Open Deal — " + d.name, ["Field", "Value"], [
+            ["Deal", d.name], ["Stage", d.stage], ["Pipeline", d.pipeline],
+            ["Amount", fmtK(d.amount)], ["Forecast", d.forecast],
+            ["Close Date", d.closeDate], ["Next Steps", d.nextStep],
+          ]);
         });
       });
     }
@@ -2258,17 +2624,17 @@
           longestMonologue: { suffix: " min", y: 2.7, q: 2.8, m: 2.9, weeks: [3.0, 2.9, 2.8, 2.7] },
           longestCustomerStory: { suffix: " min", y: 4.4, q: 4.2, m: 4.0, weeks: [3.8, 4.0, 4.1, 4.2] },
           patienceTime: { suffix: " sec", y: 1.3, q: 1.2, m: 1.1, weeks: [1.0, 1.1, 1.2, 1.2] },
-          questionRate: { suffix: " /call", y: 9, q: 8, m: 7, weeks: [6, 7, 8, 8] },
+          questionRate: { suffix: " /meeting", y: 9, q: 8, m: 7, weeks: [6, 7, 8, 8] },
         },
         scorecards: {
-          y: [["Discovery Call Quality", "84%"], ["Demo Call Quality", "80%"], ["Objection Handling", "73%"]],
-          q: [["Discovery Call Quality", "82%"], ["Demo Call Quality", "78%"], ["Objection Handling", "71%"]],
-          m: [["Discovery Call Quality", "80%"], ["Demo Call Quality", "76%"], ["Objection Handling", "69%"]],
+          y: [["Discovery Meeting Quality", "84%"], ["Demo Meeting Quality", "80%"], ["Objection Handling", "73%"]],
+          q: [["Discovery Meeting Quality", "82%"], ["Demo Meeting Quality", "78%"], ["Objection Handling", "71%"]],
+          m: [["Discovery Meeting Quality", "80%"], ["Demo Meeting Quality", "76%"], ["Objection Handling", "69%"]],
           weeks: [
-            [["Discovery Call Quality", "78%"], ["Demo Call Quality", "74%"], ["Objection Handling", "67%"]],
-            [["Discovery Call Quality", "79%"], ["Demo Call Quality", "75%"], ["Objection Handling", "68%"]],
-            [["Discovery Call Quality", "81%"], ["Demo Call Quality", "77%"], ["Objection Handling", "70%"]],
-            [["Discovery Call Quality", "82%"], ["Demo Call Quality", "78%"], ["Objection Handling", "71%"]],
+            [["Discovery Meeting Quality", "78%"], ["Demo Meeting Quality", "74%"], ["Objection Handling", "67%"]],
+            [["Discovery Meeting Quality", "79%"], ["Demo Meeting Quality", "75%"], ["Objection Handling", "68%"]],
+            [["Discovery Meeting Quality", "81%"], ["Demo Meeting Quality", "77%"], ["Objection Handling", "70%"]],
+            [["Discovery Meeting Quality", "82%"], ["Demo Meeting Quality", "78%"], ["Objection Handling", "71%"]],
           ],
         },
         usage: {
@@ -2289,17 +2655,17 @@
           longestMonologue: { suffix: " min", y: 2.3, q: 2.4, m: 2.5, weeks: [2.6, 2.5, 2.4, 2.3] },
           longestCustomerStory: { suffix: " min", y: 6.0, q: 5.8, m: 5.5, weeks: [5.2, 5.4, 5.6, 5.8] },
           patienceTime: { suffix: " sec", y: 1.7, q: 1.6, m: 1.5, weeks: [1.4, 1.5, 1.6, 1.6] },
-          questionRate: { suffix: " /call", y: 14, q: 13, m: 12, weeks: [11, 12, 13, 13] },
+          questionRate: { suffix: " /meeting", y: 14, q: 13, m: 12, weeks: [11, 12, 13, 13] },
         },
         scorecards: {
-          y: [["Discovery Call Quality", "93%"], ["Demo Call Quality", "91%"], ["Objection Handling", "88%"]],
-          q: [["Discovery Call Quality", "91%"], ["Demo Call Quality", "89%"], ["Objection Handling", "86%"]],
-          m: [["Discovery Call Quality", "90%"], ["Demo Call Quality", "88%"], ["Objection Handling", "85%"]],
+          y: [["Discovery Meeting Quality", "93%"], ["Demo Meeting Quality", "91%"], ["Objection Handling", "88%"]],
+          q: [["Discovery Meeting Quality", "91%"], ["Demo Meeting Quality", "89%"], ["Objection Handling", "86%"]],
+          m: [["Discovery Meeting Quality", "90%"], ["Demo Meeting Quality", "88%"], ["Objection Handling", "85%"]],
           weeks: [
-            [["Discovery Call Quality", "89%"], ["Demo Call Quality", "87%"], ["Objection Handling", "84%"]],
-            [["Discovery Call Quality", "90%"], ["Demo Call Quality", "88%"], ["Objection Handling", "85%"]],
-            [["Discovery Call Quality", "91%"], ["Demo Call Quality", "89%"], ["Objection Handling", "86%"]],
-            [["Discovery Call Quality", "92%"], ["Demo Call Quality", "90%"], ["Objection Handling", "87%"]],
+            [["Discovery Meeting Quality", "89%"], ["Demo Meeting Quality", "87%"], ["Objection Handling", "84%"]],
+            [["Discovery Meeting Quality", "90%"], ["Demo Meeting Quality", "88%"], ["Objection Handling", "85%"]],
+            [["Discovery Meeting Quality", "91%"], ["Demo Meeting Quality", "89%"], ["Objection Handling", "86%"]],
+            [["Discovery Meeting Quality", "92%"], ["Demo Meeting Quality", "90%"], ["Objection Handling", "87%"]],
           ],
         },
         usage: {
@@ -2320,17 +2686,17 @@
           longestMonologue: { suffix: " min", y: 4.3, q: 4.1, m: 3.9, weeks: [4.2, 4.0, 3.8, 4.1] },
           longestCustomerStory: { suffix: " min", y: 3.4, q: 3.2, m: 3.0, weeks: [2.8, 3.0, 3.1, 3.2] },
           patienceTime: { suffix: " sec", y: 0.8, q: 0.9, m: 1.0, weeks: [1.1, 1.0, 0.9, 0.9] },
-          questionRate: { suffix: " /call", y: 6, q: 5, m: 4, weeks: [3, 4, 5, 5] },
+          questionRate: { suffix: " /meeting", y: 6, q: 5, m: 4, weeks: [3, 4, 5, 5] },
         },
         scorecards: {
-          y: [["Discovery Call Quality", "68%"], ["Demo Call Quality", "65%"], ["Objection Handling", "61%"]],
-          q: [["Discovery Call Quality", "65%"], ["Demo Call Quality", "62%"], ["Objection Handling", "58%"]],
-          m: [["Discovery Call Quality", "62%"], ["Demo Call Quality", "59%"], ["Objection Handling", "55%"]],
+          y: [["Discovery Meeting Quality", "68%"], ["Demo Meeting Quality", "65%"], ["Objection Handling", "61%"]],
+          q: [["Discovery Meeting Quality", "65%"], ["Demo Meeting Quality", "62%"], ["Objection Handling", "58%"]],
+          m: [["Discovery Meeting Quality", "62%"], ["Demo Meeting Quality", "59%"], ["Objection Handling", "55%"]],
           weeks: [
-            [["Discovery Call Quality", "60%"], ["Demo Call Quality", "57%"], ["Objection Handling", "53%"]],
-            [["Discovery Call Quality", "61%"], ["Demo Call Quality", "58%"], ["Objection Handling", "54%"]],
-            [["Discovery Call Quality", "63%"], ["Demo Call Quality", "60%"], ["Objection Handling", "56%"]],
-            [["Discovery Call Quality", "64%"], ["Demo Call Quality", "61%"], ["Objection Handling", "57%"]],
+            [["Discovery Meeting Quality", "60%"], ["Demo Meeting Quality", "57%"], ["Objection Handling", "53%"]],
+            [["Discovery Meeting Quality", "61%"], ["Demo Meeting Quality", "58%"], ["Objection Handling", "54%"]],
+            [["Discovery Meeting Quality", "63%"], ["Demo Meeting Quality", "60%"], ["Objection Handling", "56%"]],
+            [["Discovery Meeting Quality", "64%"], ["Demo Meeting Quality", "61%"], ["Objection Handling", "57%"]],
           ],
         },
         usage: {
@@ -2344,12 +2710,20 @@
     function renderAllegoTab(rep, period) {
       const u = getAllegoUsage(rep, period);
       const drill = getAllegoDrillData(rep, period);
-      renderAllegoKpi("allegoContentChannel", "Channel Content Views", u.contentChannelViews, "allegoContentChannel", drill);
-      renderAllegoKpi("allegoContentIndividual", "Individual Content Views", u.contentIndividualViews, "allegoContentIndividual", drill);
-      renderAllegoKpi("allegoCourseCompleted", "Course Completed", u.courseCompleted, "allegoCourseCompleted", drill);
-      renderAllegoKpi("allegoDsrCreated", "Digital Sales Rooms Created", u.dsrCreated, "allegoDsrCreated", drill);
-      renderAllegoKpi("allegoDsrLinked", "DSTs Linked to HubSpot Opportunities", u.dsrLinkedOpps, "allegoDsrLinked", drill);
-      renderAllegoKpi("allegoRolePlay", "Role-Play Sessions", u.rolePlayCount, "allegoRolePlay", drill);
+      const periodType = period.type;
+      const channelTarget = periodType === "year" ? 100 : periodType === "quarter" ? 28 : periodType === "month" ? 10 : 3;
+      const individualTarget = periodType === "year" ? 50 : periodType === "quarter" ? 14 : periodType === "month" ? 5 : 2;
+      const courseTarget = periodType === "year" ? 12 : periodType === "quarter" ? 4 : periodType === "month" ? 2 : 1;
+      const dsrTarget = periodType === "year" ? 15 : periodType === "quarter" ? 5 : periodType === "month" ? 2 : 1;
+      const linkedTarget = periodType === "year" ? 10 : periodType === "quarter" ? 3 : periodType === "month" ? 1 : 1;
+      const rolePlayTarget = periodType === "year" ? 25 : periodType === "quarter" ? 8 : periodType === "month" ? 3 : 2;
+
+      renderAllegoKpi("allegoContentChannel", "Channel Content Views", u.contentChannelViews, "allegoContentChannel", drill, trafficLevel(u.contentChannelViews / channelTarget), `Target: ${channelTarget}`);
+      renderAllegoKpi("allegoContentIndividual", "Individual Content Views", u.contentIndividualViews, "allegoContentIndividual", drill, trafficLevel(u.contentIndividualViews / individualTarget), `Target: ${individualTarget}`);
+      renderAllegoKpi("allegoCourseCompleted", "Courses Completed", u.courseCompleted, "allegoCourseCompleted", drill, trafficLevel(u.courseCompleted / courseTarget), `Target: ${courseTarget}`);
+      renderAllegoKpi("allegoDsrCreated", "Digital Sales Rooms Created", u.dsrCreated, "allegoDsrCreated", drill, trafficLevel(u.dsrCreated / dsrTarget), `Target: ${dsrTarget}`);
+      renderAllegoKpi("allegoDsrLinked", "DSRs Linked to HubSpot Opportunities", u.dsrLinkedOpps, "allegoDsrLinked", drill, trafficLevel(u.dsrLinkedOpps / linkedTarget), `Target: ${linkedTarget}`);
+      renderAllegoKpi("allegoRolePlay", "Role-Play Sessions", u.rolePlayCount, "allegoRolePlay", drill, trafficLevel(u.rolePlayCount / rolePlayTarget), `Target: ${rolePlayTarget}`);
       renderSkillEvaluation(rep, period);
     }
 
@@ -2359,25 +2733,41 @@
       const cr = data.callRecording;
       const inter = data.interactivity;
       const usage = data.usage;
+      const periodType = period.type;
 
-      renderGongKpi("gongCallDuration", "Call Duration", gongMetricValue(cr.callDuration), null, "gongCallDuration", drill);
-      renderGongKpi("gongCallVolume", "Meeting Volume", gongMetricValue(cr.callVolume), null, "gongCallVolume", drill);
-      renderGongKpi("gongScheduledCalls", "# of Scheduled Calls", gongMetricValue(cr.scheduledCalls), null, "gongScheduledCalls", drill);
-      renderGongKpi("gongPctRecorded", "% of Calls Recorded", gongMetricValue(cr.pctRecorded), null, "gongPctRecorded", drill);
+      const volumeTarget = periodType === "year" ? 80 : periodType === "quarter" ? 22 : periodType === "month" ? 8 : 5;
+      const scheduledTarget = periodType === "year" ? 100 : periodType === "quarter" ? 28 : periodType === "month" ? 10 : 6;
+      const recordedTarget = 80;
+      const talkTarget = 45;
+      const durationTarget = 30;
+      const monologueTarget = 3;
+      const storyTarget = 5;
+      const patienceTarget = 1.5;
+      const questionTarget = periodType === "year" ? 8 : periodType === "quarter" ? 7 : 6;
+      const timeTarget = periodType === "year" ? 1200 : periodType === "quarter" ? 350 : 120;
+      const viewsTarget = periodType === "year" ? 40 : periodType === "quarter" ? 10 : 4;
 
-      renderGongKpi("gongTalkRatio", "Talk Ratio", gongMetricValue(inter.talkRatio), null, "gongTalkRatio", drill);
-      renderGongKpi("gongLongestMonologue", "Longest Monologue", gongMetricValue(inter.longestMonologue), null, "gongLongestMonologue", drill);
-      renderGongKpi("gongLongestCustomerStory", "Longest Customer Story", gongMetricValue(inter.longestCustomerStory), null, "gongLongestCustomerStory", drill);
-      renderGongKpi("gongPatienceTime", "Patience Time", gongMetricValue(inter.patienceTime), null, "gongPatienceTime", drill);
-      renderGongKpi("gongQuestionRate", "Question Rate", gongMetricValue(inter.questionRate), null, "gongQuestionRate", drill);
+      renderGongKpi("gongCallDuration", "Meeting Duration", gongMetricValue(cr.callDuration), null, "gongCallDuration", drill, trafficLevelInverse(cr.callDuration.a / durationTarget));
+      renderGongKpi("gongCallVolume", "Meeting Volume", gongMetricValue(cr.callVolume), null, "gongCallVolume", drill, trafficLevel(cr.callVolume.a / volumeTarget));
+      renderGongKpi("gongScheduledCalls", "# of Scheduled Meetings", gongMetricValue(cr.scheduledCalls), null, "gongScheduledCalls", drill, trafficLevel(cr.scheduledCalls.a / scheduledTarget));
+      renderGongKpi("gongPctRecorded", "% of Meetings Recorded", gongMetricValue(cr.pctRecorded), null, "gongPctRecorded", drill, trafficLevel(cr.pctRecorded.a / recordedTarget));
+
+      renderGongKpi("gongTalkRatio", "Talk Ratio", gongMetricValue(inter.talkRatio), null, "gongTalkRatio", drill, trafficLevelInverse(inter.talkRatio.a / talkTarget));
+      renderGongKpi("gongLongestMonologue", "Longest Monologue", gongMetricValue(inter.longestMonologue), null, "gongLongestMonologue", drill, trafficLevelInverse(inter.longestMonologue.a / monologueTarget));
+      renderGongKpi("gongLongestCustomerStory", "Longest Customer Story", gongMetricValue(inter.longestCustomerStory), null, "gongLongestCustomerStory", drill, trafficLevel(inter.longestCustomerStory.a / storyTarget));
+      renderGongKpi("gongPatienceTime", "Patience Time", gongMetricValue(inter.patienceTime), null, "gongPatienceTime", drill, trafficLevel(inter.patienceTime.a / patienceTarget));
+      renderGongKpi("gongQuestionRate", "Question Rate", gongMetricValue(inter.questionRate), null, "gongQuestionRate", drill, trafficLevel(inter.questionRate.a / questionTarget));
 
       document.getElementById("gongScorecardsTable").innerHTML = `
         <thead><tr><th>Scorecard</th><th>Score</th></tr></thead>
-        <tbody>${data.scorecards.map((r, i) => `
+        <tbody>${data.scorecards.map((r, i) => {
+          const score = parseInt(r[1], 10);
+          return `
           <tr>
             <td><span class="clickable" data-gong-sc="${i}">${r[0]}</span></td>
-            <td>${r[1]}</td>
-          </tr>`).join("")}
+            <td><span class="${skillScoreClass(score)}">${r[1]}</span></td>
+          </tr>`;
+        }).join("")}
         </tbody>`;
       document.querySelectorAll("[data-gong-sc]").forEach(el => {
         el.addEventListener("click", () => {
@@ -2386,8 +2776,8 @@
         });
       });
 
-      renderGongKpi("gongTimeSpent", "Time Spent on Gong", gongMetricValue(usage.timeOnGong), null, "gongTimeSpent", drill);
-      renderGongKpi("gongRecordingViews", "Recording Views", gongMetricValue(usage.recordingViews), null, "gongRecordingViews", drill);
+      renderGongKpi("gongTimeSpent", "Time Spent on Gong", gongMetricValue(usage.timeOnGong), null, "gongTimeSpent", drill, trafficLevel(usage.timeOnGong.a / timeTarget));
+      renderGongKpi("gongRecordingViews", "Recording Views", gongMetricValue(usage.recordingViews), null, "gongRecordingViews", drill, trafficLevel(usage.recordingViews.a / viewsTarget));
     }
 
     let activeTab = "scorecard";
@@ -2484,8 +2874,11 @@
       } else if (activeTab === "hubspot") {
         renderWonDealsCombined(rep, drill, period);
         renderOpenCoverage(rep, drill, period);
+        renderDealHealthSummary(rep);
         renderProgressed(drill);
         renderStaleDeals(rep);
+        renderExpiringDeals(rep);
+        renderOpenDeals(rep);
         renderPipelineKpis(rep, period, drill);
         renderHubspotActivities(rep, drill, period);
         renderCharts(rep, period);
