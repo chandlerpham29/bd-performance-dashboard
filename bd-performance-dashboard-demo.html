@@ -329,16 +329,87 @@
       line-height: 1.4;
     }
     .action-card__hint {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-secondary);
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--muted);
       margin-top: 0.15rem;
       padding-top: 0.55rem;
       border-top: 1px solid var(--border);
-      line-height: 1.35;
+      line-height: 1.4;
+      font-style: italic;
     }
-    .action-card__hint--warn { color: #fcd34d; }
-    .action-card__hint--critical { color: #fca5a5; }
+    .learning-leaderboard {
+      margin-top: 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+    .learning-leaderboard__title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.75rem;
+    }
+    .learning-leaderboard__list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .learning-leaderboard__row {
+      display: grid;
+      grid-template-columns: 2rem 1fr auto;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.45rem 0.65rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+    }
+    .learning-leaderboard__row--current {
+      background: rgba(96, 165, 250, 0.12);
+      border: 1px solid rgba(96, 165, 250, 0.28);
+    }
+    .learning-leaderboard__rank {
+      font-weight: 700;
+      color: var(--muted);
+      text-align: center;
+    }
+    .learning-leaderboard__rank--1 { color: #fcd34d; }
+    .learning-leaderboard__name { font-weight: 600; color: var(--text); }
+    .learning-leaderboard__hours { color: var(--text-secondary); font-weight: 600; }
+    .allego-focus-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 900px) { .allego-focus-grid { grid-template-columns: 1fr; } }
+    .subsection-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.65rem;
+    }
+    .status-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-radius: 6px;
+      padding: 0.2rem 0.55rem;
+      display: inline-block;
+    }
+    .status-badge--progressed {
+      color: #6ee7b7;
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+    }
+    .status-badge--stale {
+      color: #fca5a5;
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+    }
 
     .deal-health-kpis {
       display: grid;
@@ -742,6 +813,7 @@
     <section class="section-highlight">
       <h2>Learning Time</h2>
       <div class="action-panel" id="learningTimePanel"></div>
+      <div class="learning-leaderboard" id="learningTimeLeaderboard"></div>
     </section>
 
     <section class="section-highlight">
@@ -813,23 +885,19 @@
     </section>
 
     <section class="section-highlight">
-      <h2>Deal Health &amp; Pipeline Management</h2>
+      <h2>Deal Status</h2>
       <div class="deal-health-kpis" id="dealHealthSummary"></div>
 
-      <div class="row-line">
+      <div class="row-line row-line--full">
         <div class="row-line__cell">
-          <h3>Deals Progressed in Stage</h3>
-          <div class="scorecard-wrap"><table class="data-table" id="progressedTable"></table></div>
-        </div>
-        <div class="row-line__cell">
-          <h3>Stale Deals — No Progress in Period</h3>
-          <div class="scorecard-wrap"><table class="data-table" id="staleDealsTable"></table></div>
+          <h3>Deal Stage Progress</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="dealStageStatusTable"></table></div>
         </div>
       </div>
 
       <div class="row-line row-line--full">
         <div class="row-line__cell">
-          <h3>Deals Expiring in Period</h3>
+          <h3>Subscription Expiry Deals</h3>
           <div class="scorecard-wrap"><table class="data-table" id="expiringDealsTable"></table></div>
         </div>
       </div>
@@ -860,33 +928,61 @@
     <p class="placeholder-note">Allego — sales enablement &amp; learning content (demo data)</p>
 
     <section class="section-highlight">
-      <h2>Usage</h2>
-      <div class="subsection">
-        <h3>Content</h3>
-        <div class="gong-metrics-grid gong-metrics-grid--3">
-          <div class="num-kpi num-kpi--compact" id="allegoContentChannel"></div>
-          <div class="num-kpi num-kpi--compact" id="allegoContentIndividual"></div>
-          <div class="num-kpi num-kpi--compact" id="allegoCourseCompleted"></div>
+      <h2>Knowledge</h2>
+      <div class="gong-metrics-grid gong-metrics-grid--3" style="margin-bottom:1.25rem;">
+        <div class="num-kpi" id="allegoCourseCompletionKpi"></div>
+      </div>
+      <div class="row-line">
+        <div class="row-line__cell">
+          <h3>Courses in Progress</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="allegoCoursesInProgress"></table></div>
+        </div>
+        <div class="row-line__cell">
+          <h3>Focus Area — Content by Tag</h3>
+          <div class="allego-focus-grid">
+            <div>
+              <div class="subsection-title">Most Viewed</div>
+              <div class="scorecard-wrap"><table class="data-table" id="allegoFocusTop"></table></div>
+            </div>
+            <div>
+              <div class="subsection-title">Least Viewed</div>
+              <div class="scorecard-wrap"><table class="data-table" id="allegoFocusLeast"></table></div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="subsection">
-        <h3>DSR and Role Play</h3>
-        <div class="gong-metrics-grid gong-metrics-grid--3">
-          <div class="num-kpi num-kpi--compact" id="allegoDsrCreated"></div>
-          <div class="num-kpi num-kpi--compact" id="allegoDsrLinked"></div>
-          <div class="num-kpi num-kpi--compact" id="allegoRolePlay"></div>
+      <div class="row-line row-line--full" style="margin-top:1.25rem;">
+        <div class="row-line__cell">
+          <h3>Top Searches &amp; Questions</h3>
+          <div class="scorecard-wrap"><table class="data-table" id="allegoTopSearches"></table></div>
         </div>
       </div>
     </section>
 
     <section class="section-highlight">
-      <h2>Skill Evaluation</h2>
+      <h2>Skills</h2>
       <div class="skill-summary-grid">
         <div class="chart-box">
           <div class="chart-wrap radar"><canvas id="skillRadarChart"></canvas></div>
         </div>
         <div class="scorecard-wrap">
           <table class="data-table" id="allegoSkillsTable"></table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-highlight">
+      <h2>Performance</h2>
+      <div class="gong-metrics-grid gong-metrics-grid--3" style="margin-bottom:1.25rem;">
+        <div class="num-kpi" id="allegoWinRateWithDsr"></div>
+        <div class="num-kpi" id="allegoWinRateWithoutDsr"></div>
+        <div class="num-kpi" id="allegoWinRateImprovement"></div>
+      </div>
+      <div class="subsection">
+        <h3>DSR Performance</h3>
+        <div class="gong-metrics-grid gong-metrics-grid--3">
+          <div class="num-kpi num-kpi--compact" id="allegoExternalDsrUsage"></div>
+          <div class="num-kpi num-kpi--compact" id="allegoContentEffectiveness"></div>
         </div>
       </div>
     </section>
@@ -1375,9 +1471,10 @@
           ["Product Knowledge", "75", "71", "+6%"],
           ["Value Prop & Objections", "72", "68", "+6%"],
         ]},
-        summaryRevenueImpact: { title: "Revenue Impact by DSRs", headers: ["DSR Name", "Opportunity", "Amount", "Stage"], rows: [
-          ["Acme Corp — Enterprise Eval", "Acme Corp — Enterprise", fmtK(45), "Proposal"],
-          ["GlobalTech Expansion", "GlobalTech Ltd — Expansion", fmtK(62), "Negotiation"],
+        summaryRevenueImpact: { title: "Win Rate — DSR Impact", headers: ["Category", "Win Rate", "Deals Closed", "Period"], rows: [
+          ["With DSR", "68%", "11", "Q2 2026"],
+          ["Without DSR", "42%", "7", "Q2 2026"],
+          ["Improvement", "+26 pts", "—", "vs. without DSR"],
         ]},
       };
     }
@@ -1618,6 +1715,31 @@
       return chartSliceFromOpenPipeSnapshots(snapshots, period);
     }
 
+    function getTotalLearningHours(repKey, period) {
+      const elsaVal = getElsaValue(PROFILES[repKey].elsa, period);
+      const allego = getAllegoUsage(repKey, period);
+      const gongUsage = getGongForPeriod(repKey, period).usage;
+      return elsaVal.minutes / 60 + allego.learningTimeHours + gongUsage.learningTimeHours.a;
+    }
+
+    function renderLearningTimeLeaderboard(currentRep, period) {
+      const el = document.getElementById("learningTimeLeaderboard");
+      if (!el) return;
+      const ranked = Object.keys(REPS)
+        .map(key => ({ key, name: REPS[key], hours: getTotalLearningHours(key, period) }))
+        .sort((a, b) => b.hours - a.hours)
+        .map((entry, i) => ({ ...entry, rank: i + 1 }));
+      el.innerHTML = `
+        <div class="learning-leaderboard__title">Learning Time Ranking — ${period.headerPeriod}</div>
+        <div class="learning-leaderboard__list">${ranked.map(r => `
+          <div class="learning-leaderboard__row${r.key === currentRep ? " learning-leaderboard__row--current" : ""}">
+            <span class="learning-leaderboard__rank${r.rank === 1 ? " learning-leaderboard__rank--1" : ""}">#${r.rank}</span>
+            <span class="learning-leaderboard__name">${r.name}${r.key === currentRep ? " (you)" : ""}</span>
+            <span class="learning-leaderboard__hours">${formatLearningHours(r.hours, false)}</span>
+          </div>`).join("")}
+        </div>`;
+    }
+
     function renderCombinedScorecard(rep, drill, table1Period, table2Period, period) {
       const p = PROFILES[rep];
       const t1 = p.t1;
@@ -1716,7 +1838,7 @@
           value: `${elsaVal.sessions} sessions · ${elsaHours}`,
           meta: `Target: ${elsaSessionTarget} sessions · ${elsaHourTarget} hrs`,
           status: trafficLevel(elsaRatio),
-          action: elsaRatio < 0.7 ? "Schedule 2+ practice sessions this week" : "Keep current learning cadence",
+          action: "Total ELSA practice sessions and time invested in the selected period",
           drillKey: "learningTimeElsa",
         },
         {
@@ -1725,7 +1847,7 @@
           value: allegoHours,
           meta: `Target: ${allegoHourTarget} hrs`,
           status: trafficLevel(allegoRatio),
-          action: allegoRatio < 0.7 ? "Complete 1 assigned course module" : "On pace — continue assigned content",
+          action: "Time spent on Allego courses and enablement content",
           drillKey: "learningTimeAllego",
         },
         {
@@ -1734,14 +1856,16 @@
           value: gongHours,
           meta: `Target: ${gongHourTarget} hrs`,
           status: trafficLevel(gongRatio),
-          action: gongRatio < 0.7 ? "Review 2 recorded meetings for coaching" : "Strong engagement with meeting reviews",
+          action: "Time spent reviewing recordings and coaching materials on Gong",
           drillKey: "learningTimeGong",
         },
       ], drill);
+      renderLearningTimeLeaderboard(rep, period);
     }
 
     function renderAllegoSummary(rep, period, drill) {
       const u = getAllegoUsage(rep, period);
+      const perf = getAllegoPerformance(rep, period);
       const completionPct = u.coursesAssigned ? Math.round((u.courseCompleted / u.coursesAssigned) * 100) : 0;
       const skills = getAllegoSkills(rep, period);
       const skillsPrior = getAllegoSkillsPrior(rep, period);
@@ -1749,37 +1873,38 @@
       const priorAvg = averageSkillScore(skillsPrior);
       const improvement = skillImprovementPct(avgScore, priorAvg);
       const improvementLabel = improvement >= 0 ? `+${improvement}%` : `${improvement}%`;
+      const winRateDelta = perf.winRateWithDsr - perf.winRateWithoutDsr;
+      const winRateDeltaLabel = winRateDelta >= 0 ? `+${winRateDelta} pts` : `${winRateDelta} pts`;
 
-      const completionTarget = 80;
+      const completionTarget = 100;
       const scoreTarget = 75;
-      const revenueTarget = period.type === "year" ? 300 : period.type === "quarter" ? 100 : period.type === "month" ? 35 : 10;
 
       renderActionPanel("allegoSummaryPanel", [
         {
-          badge: "Completion",
-          label: "Courses Completed",
-          value: `${u.courseCompleted} (${completionPct}%)`,
+          badge: "Knowledge",
+          label: "Course Completion",
+          value: `${completionPct}%`,
           meta: `Target: ${completionTarget}% · ${u.courseCompleted} of ${u.coursesAssigned} courses`,
           status: trafficLevel(completionPct / completionTarget),
-          action: completionPct < completionTarget ? "Finish in-progress courses before period end" : "Course completion on track",
+          action: "Percentage of assigned Allego courses completed in the selected period",
           drillKey: "summaryCourseCompletion",
         },
         {
           badge: "Skills",
-          label: "Average Score",
+          label: "Average Skill Score",
           value: `${avgScore} (${improvementLabel})`,
           meta: `Target: ${scoreTarget} · Prior period: ${priorAvg}`,
           status: trafficLevel(avgScore / scoreTarget),
-          action: avgScore < scoreTarget ? "Focus role-play on weakest skill area" : "Skill scores trending positively",
+          action: "Mean score across all skill sets vs. the previous selected duration",
           drillKey: "summaryAvgSkills",
         },
         {
-          badge: "DSR Impact",
-          label: "Revenue Impact",
-          value: fmtK(u.revenueImpactDsr),
-          meta: `Target: ${fmtK(revenueTarget)}`,
-          status: trafficLevel(u.revenueImpactDsr / revenueTarget),
-          action: u.revenueImpactDsr < revenueTarget ? "Link DSRs to top open opportunities" : "DSR pipeline contribution is healthy",
+          badge: "Performance",
+          label: "Win Rate — DSR Impact",
+          value: winRateDeltaLabel,
+          meta: `With DSR: ${perf.winRateWithDsr}% · Without DSR: ${perf.winRateWithoutDsr}%`,
+          status: trafficLevel(winRateDelta / 30),
+          action: "Win rate improvement when deals include a Digital Sales Room",
           drillKey: "summaryRevenueImpact",
         },
       ], drill);
@@ -1789,13 +1914,10 @@
       const data = getGongForPeriod(rep, period);
       const cr = data.callRecording;
       const inter = data.interactivity;
-      const usage = data.usage;
 
       const volumeTarget = period.type === "year" ? 80 : period.type === "quarter" ? 22 : period.type === "month" ? 8 : 5;
       const recordedTarget = 80;
       const talkTarget = 45;
-      const timeTarget = period.type === "year" ? 1200 : period.type === "quarter" ? 350 : period.type === "month" ? 120 : 90;
-      const viewsTarget = period.type === "year" ? 40 : period.type === "quarter" ? 10 : period.type === "month" ? 4 : 2;
 
       renderActionPanel("gongSummaryPanel", [
         {
@@ -1804,7 +1926,7 @@
           value: cr.callVolume.a,
           meta: `Target: ${volumeTarget} meetings`,
           status: trafficLevel(cr.callVolume.a / volumeTarget),
-          action: cr.callVolume.a < volumeTarget ? "Increase outbound meeting activity" : "Meeting volume on track",
+          action: "Total customer meetings held in the selected period",
         },
         {
           badge: "Recording",
@@ -1812,7 +1934,7 @@
           value: cr.pctRecorded.a + "%",
           meta: `Target: ${recordedTarget}%`,
           status: trafficLevel(cr.pctRecorded.a / recordedTarget),
-          action: cr.pctRecorded.a < recordedTarget ? "Enable recording on upcoming meetings" : "Recording coverage is strong",
+          action: "Share of meetings captured for coaching and review",
         },
         {
           badge: "Interactivity",
@@ -1820,23 +1942,7 @@
           value: inter.talkRatio.a + "%",
           meta: `Target: ≤ ${talkTarget}% rep talk`,
           status: trafficLevelInverse(inter.talkRatio.a / talkTarget),
-          action: inter.talkRatio.a > talkTarget ? "Ask more discovery questions; reduce monologues" : "Balanced rep-to-buyer talk ratio",
-        },
-        {
-          badge: "Engagement",
-          label: "Time on Gong",
-          value: usage.timeOnGong.a + " min",
-          meta: `Target: ${timeTarget} min`,
-          status: trafficLevel(usage.timeOnGong.a / timeTarget),
-          action: usage.timeOnGong.a < timeTarget ? "Block 30 min for meeting review & coaching" : "Active Gong usage this period",
-        },
-        {
-          badge: "Coaching",
-          label: "Recording Views",
-          value: usage.recordingViews.a,
-          meta: `Target: ${viewsTarget} views`,
-          status: trafficLevel(usage.recordingViews.a / viewsTarget),
-          action: usage.recordingViews.a < viewsTarget ? "Review top 3 recent meetings this week" : "Consistent coaching review habit",
+          action: "Rep talk time as a percentage of total meeting duration",
         },
       ], {});
     }
@@ -1882,14 +1988,21 @@
 
     function renderSkillEvaluation(rep, period) {
       const skills = getAllegoSkills(rep, period);
-      const periodLabel = period.headerPeriod;
+      const skillsPrior = getAllegoSkillsPrior(rep, period);
       document.getElementById("allegoSkillsTable").innerHTML = `
-        <thead><tr><th>Skill</th><th>Score</th></tr></thead>
-        <tbody>${SKILL_LABELS.map((label, i) => `
+        <thead><tr><th>Skill</th><th>Score</th><th>Prior</th><th>Change</th></tr></thead>
+        <tbody>${SKILL_LABELS.map((label, i) => {
+          const change = skillImprovementPct(skills[i], skillsPrior[i]);
+          const changeLabel = change >= 0 ? `+${change}%` : `${change}%`;
+          const changeCls = change >= 0 ? "val-green" : "val-red";
+          return `
           <tr>
             <td class="row-metric">${label}</td>
             <td><span class="${skillScoreClass(skills[i])}">${skills[i]}</span></td>
-          </tr>`).join("")}
+            <td>${skillsPrior[i]}</td>
+            <td><span class="${changeCls}">${changeLabel}</span></td>
+          </tr>`;
+        }).join("")}
         </tbody>`;
       const canvas = document.getElementById("skillRadarChart");
       if (!canvas) return;
@@ -2114,22 +2227,48 @@
       });
     }
 
-    function renderProgressed(drill) {
-      const rows = [
-        ["Acme Corp — Enterprise", "Proposal", "New Business", fmtK(45), "Send revised pricing"],
-        ["GlobalTech Ltd", "Negotiation", "Expansion", fmtK(62), "Legal review"],
-        ["MedHealth Group", "Demo Completed", "New Business", fmtK(38), "Schedule exec call"],
+    function renderDealStageStatus(rep, drill) {
+      const progressed = [
+        { name: "Acme Corp — Enterprise", stage: "Proposal", pipeline: "New Business", amount: 45, nextStep: "Send revised pricing", daysInStage: 6, status: "progressed" },
+        { name: "GlobalTech Ltd", stage: "Negotiation", pipeline: "Expansion", amount: 62, nextStep: "Legal review", daysInStage: 4, status: "progressed" },
+        { name: "MedHealth Group", stage: "Demo Completed", pipeline: "New Business", amount: 38, nextStep: "Schedule exec call", daysInStage: 3, status: "progressed" },
       ];
-      document.getElementById("progressedTable").innerHTML = `
-        <thead><tr><th>Deal Name</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Next Steps</th></tr></thead>
-        <tbody>${rows.map((r,i) => `<tr>
-          <td><span class="clickable" data-pr="${i}">${r[0]}</span></td>
-          <td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td>
-        </tr>`).join("")}</tbody>`;
-      document.querySelectorAll("#progressedTable .clickable").forEach(el => {
+      const stale = (PROFILES[rep].staleDeals || []).map(d => ({
+        ...d,
+        nextStep: "—",
+        daysInStage: d.staleDays,
+        status: "stale",
+      }));
+      const allDeals = [...progressed, ...stale];
+      const table = document.getElementById("dealStageStatusTable");
+      if (!table) return;
+      if (!allDeals.length) {
+        table.innerHTML = `
+          <thead><tr><th>Deal Name</th><th>Status</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Time in Current Stage</th><th>Next Steps</th></tr></thead>
+          <tbody><tr><td colspan="7" style="text-align:center;color:var(--muted);">No deal stage activity in this period</td></tr></tbody>`;
+        return;
+      }
+      table.innerHTML = `
+        <thead><tr><th>Deal Name</th><th>Status</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Time in Current Stage</th><th>Next Steps</th></tr></thead>
+        <tbody>${allDeals.map((d, i) => `
+          <tr>
+            <td><span class="clickable" data-dss="${i}">${d.name}</span></td>
+            <td><span class="status-badge status-badge--${d.status}">${d.status === "progressed" ? "Progressed" : "No Progress"}</span></td>
+            <td>${d.stage}</td>
+            <td>${d.pipeline}</td>
+            <td>${fmtK(d.amount)}</td>
+            <td><span class="${staleDurationClass(d.daysInStage)}">${formatStaleDuration(d.daysInStage)}</span></td>
+            <td>${d.nextStep}</td>
+          </tr>`).join("")}
+        </tbody>`;
+      document.querySelectorAll("#dealStageStatusTable .clickable").forEach(el => {
         el.addEventListener("click", () => {
-          const r = rows[+el.dataset.pr];
-          openModal("Deal — " + r[0], ["Field", "Value"], r.map((v,i) => [["Deal","Stage","Pipeline","Amount","Next Steps"][i], v]).slice(0,5).map(([f,v]) => [f,v]));
+          const d = allDeals[+el.dataset.dss];
+          openModal("Deal — " + d.name, ["Field", "Value"], [
+            ["Deal", d.name], ["Status", d.status === "progressed" ? "Progressed" : "No Progress"],
+            ["Stage", d.stage], ["Pipeline", d.pipeline], ["Amount", fmtK(d.amount)],
+            ["Time in Current Stage", formatStaleDuration(d.daysInStage)], ["Next Steps", d.nextStep],
+          ]);
         });
       });
     }
@@ -2158,8 +2297,8 @@
       if (!el) return;
       el.innerHTML = [
         { num: progressed, label: "Deals Progressed", status: "green" },
-        { num: stale, label: "Stale Deals", status: staleStatus },
-        { num: expiring, label: "Expiring in Period", status: expiringStatus },
+        { num: stale, label: "No Progress", status: staleStatus },
+        { num: expiring, label: "Subscription Expiry", status: expiringStatus },
         { num: open, label: "Open Deals", status: "green" },
       ].map(k => `
         <div class="deal-health-kpi deal-health-kpi--${k.status}">
@@ -2195,7 +2334,7 @@
       document.querySelectorAll("#expiringDealsTable .clickable").forEach(el => {
         el.addEventListener("click", () => {
           const d = sorted[+el.dataset.exp];
-          openModal("Expiring Deal — " + d.name, ["Field", "Value"], [
+          openModal("Subscription Expiry Deal — " + d.name, ["Field", "Value"], [
             ["Deal", d.name], ["Stage", d.stage], ["Pipeline", d.pipeline],
             ["Amount", fmtK(d.amount)], ["Close Date", d.closeDate],
             ["Time to Close", formatExpiryDays(d.daysLeft)],
@@ -2234,44 +2373,6 @@
             ["Deal", d.name], ["Stage", d.stage], ["Pipeline", d.pipeline],
             ["Amount", fmtK(d.amount)], ["Forecast", d.forecast],
             ["Close Date", d.closeDate], ["Next Steps", d.nextStep],
-          ]);
-        });
-      });
-    }
-
-    function renderStaleDeals(rep) {
-      const deals = PROFILES[rep].staleDeals || [];
-      const table = document.getElementById("staleDealsTable");
-      if (!table) return;
-      if (!deals.length) {
-        table.innerHTML = `
-          <thead><tr><th>Deal Name</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Last Progress</th><th>Stale Duration</th></tr></thead>
-          <tbody><tr><td colspan="6" style="text-align:center;color:var(--muted);">No stale deals in this period</td></tr></tbody>`;
-        return;
-      }
-      const sorted = [...deals].sort((a, b) => b.staleDays - a.staleDays);
-      table.innerHTML = `
-        <thead><tr><th>Deal Name</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Last Progress</th><th>Stale Duration</th></tr></thead>
-        <tbody>${sorted.map((d, i) => `
-          <tr>
-            <td><span class="clickable" data-stale="${i}">${d.name}</span></td>
-            <td>${d.stage}</td>
-            <td>${d.pipeline}</td>
-            <td>${fmtK(d.amount)}</td>
-            <td>${d.lastProgress}</td>
-            <td><span class="${staleDurationClass(d.staleDays)}">${formatStaleDuration(d.staleDays)}</span></td>
-          </tr>`).join("")}
-        </tbody>`;
-      document.querySelectorAll("#staleDealsTable .clickable").forEach(el => {
-        el.addEventListener("click", () => {
-          const d = sorted[+el.dataset.stale];
-          openModal("Stale Deal — " + d.name, ["Field", "Value"], [
-            ["Deal", d.name],
-            ["Stage", d.stage],
-            ["Pipeline", d.pipeline],
-            ["Amount", fmtK(d.amount)],
-            ["Last Progress", d.lastProgress],
-            ["Stale Duration", formatStaleDuration(d.staleDays)],
           ]);
         });
       });
@@ -2538,6 +2639,34 @@
             [72, 77, 72, 67, 77, 69],
           ],
         },
+        knowledge: {
+          coursesInProgress: [
+            { name: "Advanced Negotiation", progress: 65, modules: "13/20", dueDate: "2026-07-15" },
+            { name: "Enterprise Sales Mastery", progress: 40, modules: "4/10", dueDate: "2026-07-30" },
+          ],
+          focusTop: [
+            { tag: "Discovery", views: 28 },
+            { tag: "Objection Handling", views: 22 },
+            { tag: "Product Knowledge", views: 18 },
+          ],
+          focusLeast: [
+            { tag: "Competitive Intel", views: 2 },
+            { tag: "Legal & Compliance", views: 3 },
+            { tag: "Partner Enablement", views: 4 },
+          ],
+          topSearches: [
+            { query: "How to handle pricing objections", count: 8 },
+            { query: "Discovery question framework", count: 6 },
+            { query: "DSR best practices", count: 5 },
+            { query: "Competitive battlecard — Competitor X", count: 4 },
+          ],
+        },
+        performance: {
+          winRateWithDsr: { y: 72, q: 68, m: 65, weeks: [60, 62, 65, 68] },
+          winRateWithoutDsr: { y: 48, q: 45, m: 42, weeks: [40, 41, 42, 45] },
+          externalDsrUsage: { y: 156, q: 42, m: 15, weeks: [8, 10, 11, 13] },
+          contentEffectiveness: { suffix: "%", y: 78, q: 74, m: 70, weeks: [68, 70, 72, 74] },
+        },
       },
       james: {
         usage: {
@@ -2573,6 +2702,33 @@
             [84, 88, 84, 82, 86, 85],
           ],
         },
+        knowledge: {
+          coursesInProgress: [
+            { name: "Executive Selling", progress: 85, modules: "17/20", dueDate: "2026-06-30" },
+          ],
+          focusTop: [
+            { tag: "Value Selling", views: 42 },
+            { tag: "Demo Excellence", views: 35 },
+            { tag: "Negotiation", views: 30 },
+          ],
+          focusLeast: [
+            { tag: "Onboarding", views: 3 },
+            { tag: "Renewals", views: 5 },
+            { tag: "Partner Enablement", views: 6 },
+          ],
+          topSearches: [
+            { query: "Enterprise demo script", count: 12 },
+            { query: "Multi-threading strategy", count: 9 },
+            { query: "ROI calculator template", count: 7 },
+            { query: "Champion enablement kit", count: 6 },
+          ],
+        },
+        performance: {
+          winRateWithDsr: { y: 82, q: 78, m: 75, weeks: [72, 74, 76, 78] },
+          winRateWithoutDsr: { y: 55, q: 52, m: 48, weeks: [46, 48, 50, 52] },
+          externalDsrUsage: { y: 248, q: 68, m: 24, weeks: [14, 16, 18, 20] },
+          contentEffectiveness: { suffix: "%", y: 86, q: 82, m: 78, weeks: [76, 78, 80, 82] },
+        },
       },
       maria: {
         usage: {
@@ -2607,6 +2763,34 @@
             [50, 54, 47, 44, 52, 46],
             [51, 55, 48, 45, 53, 47],
           ],
+        },
+        knowledge: {
+          coursesInProgress: [
+            { name: "Discovery Excellence", progress: 55, modules: "11/20", dueDate: "2026-07-20" },
+            { name: "Value-Based Selling", progress: 20, modules: "2/10", dueDate: "2026-08-05" },
+            { name: "Objection Handling", progress: 10, modules: "1/10", dueDate: "2026-08-15" },
+          ],
+          focusTop: [
+            { tag: "Discovery", views: 12 },
+            { tag: "Product Knowledge", views: 9 },
+            { tag: "Prospecting", views: 7 },
+          ],
+          focusLeast: [
+            { tag: "Competitive Intel", views: 1 },
+            { tag: "Legal & Compliance", views: 1 },
+            { tag: "Partner Enablement", views: 2 },
+          ],
+          topSearches: [
+            { query: "Basic discovery questions", count: 5 },
+            { query: "Product overview deck", count: 4 },
+            { query: "How to run a demo", count: 3 },
+          ],
+        },
+        performance: {
+          winRateWithDsr: { y: 58, q: 52, m: 48, weeks: [44, 46, 48, 52] },
+          winRateWithoutDsr: { y: 32, q: 28, m: 25, weeks: [22, 24, 26, 28] },
+          externalDsrUsage: { y: 42, q: 12, m: 4, weeks: [2, 3, 3, 4] },
+          contentEffectiveness: { suffix: "%", y: 52, q: 48, m: 44, weeks: [40, 42, 44, 48] },
         },
       },
     };
@@ -2707,24 +2891,130 @@
       },
     };
 
-    function renderAllegoTab(rep, period) {
-      const u = getAllegoUsage(rep, period);
-      const drill = getAllegoDrillData(rep, period);
-      const periodType = period.type;
-      const channelTarget = periodType === "year" ? 100 : periodType === "quarter" ? 28 : periodType === "month" ? 10 : 3;
-      const individualTarget = periodType === "year" ? 50 : periodType === "quarter" ? 14 : periodType === "month" ? 5 : 2;
-      const courseTarget = periodType === "year" ? 12 : periodType === "quarter" ? 4 : periodType === "month" ? 2 : 1;
-      const dsrTarget = periodType === "year" ? 15 : periodType === "quarter" ? 5 : periodType === "month" ? 2 : 1;
-      const linkedTarget = periodType === "year" ? 10 : periodType === "quarter" ? 3 : periodType === "month" ? 1 : 1;
-      const rolePlayTarget = periodType === "year" ? 25 : periodType === "quarter" ? 8 : periodType === "month" ? 3 : 2;
+    function getAllegoPerformance(rep, period) {
+      const p = ALLEGO[rep].performance;
+      return {
+        winRateWithDsr: getPeriodValue(p.winRateWithDsr, period),
+        winRateWithoutDsr: getPeriodValue(p.winRateWithoutDsr, period),
+        externalDsrUsage: getPeriodValue(p.externalDsrUsage, period),
+        contentEffectiveness: getPeriodValue(p.contentEffectiveness, period),
+      };
+    }
 
-      renderAllegoKpi("allegoContentChannel", "Channel Content Views", u.contentChannelViews, "allegoContentChannel", drill, trafficLevel(u.contentChannelViews / channelTarget), `Target: ${channelTarget}`);
-      renderAllegoKpi("allegoContentIndividual", "Individual Content Views", u.contentIndividualViews, "allegoContentIndividual", drill, trafficLevel(u.contentIndividualViews / individualTarget), `Target: ${individualTarget}`);
-      renderAllegoKpi("allegoCourseCompleted", "Courses Completed", u.courseCompleted, "allegoCourseCompleted", drill, trafficLevel(u.courseCompleted / courseTarget), `Target: ${courseTarget}`);
-      renderAllegoKpi("allegoDsrCreated", "Digital Sales Rooms Created", u.dsrCreated, "allegoDsrCreated", drill, trafficLevel(u.dsrCreated / dsrTarget), `Target: ${dsrTarget}`);
-      renderAllegoKpi("allegoDsrLinked", "DSRs Linked to HubSpot Opportunities", u.dsrLinkedOpps, "allegoDsrLinked", drill, trafficLevel(u.dsrLinkedOpps / linkedTarget), `Target: ${linkedTarget}`);
-      renderAllegoKpi("allegoRolePlay", "Role-Play Sessions", u.rolePlayCount, "allegoRolePlay", drill, trafficLevel(u.rolePlayCount / rolePlayTarget), `Target: ${rolePlayTarget}`);
+    function getAllegoKnowledge(rep) {
+      return ALLEGO[rep].knowledge;
+    }
+
+    function renderAllegoKnowledge(rep, period) {
+      const u = getAllegoUsage(rep, period);
+      const knowledge = getAllegoKnowledge(rep);
+      const completionPct = u.coursesAssigned ? Math.round((u.courseCompleted / u.coursesAssigned) * 100) : 0;
+      const completionTarget = 100;
+
+      const kpiBox = document.getElementById("allegoCourseCompletionKpi");
+      if (kpiBox) {
+        const cls = trafficClass(trafficLevel(completionPct / completionTarget));
+        kpiBox.innerHTML = `
+          <div class="num-kpi__title">Course Completion</div>
+          <div class="num-kpi__num kpi-traffic ${cls}">${completionPct}%</div>
+          <div class="num-kpi__period">Target: ${completionTarget}% · ${u.courseCompleted} of ${u.coursesAssigned} courses · ${period.headerPeriod}</div>`;
+      }
+
+      const coursesTable = document.getElementById("allegoCoursesInProgress");
+      if (coursesTable) {
+        const courses = knowledge.coursesInProgress;
+        if (!courses.length) {
+          coursesTable.innerHTML = `
+            <thead><tr><th>Course</th><th>Progress</th><th>Modules</th><th>Due Date</th></tr></thead>
+            <tbody><tr><td colspan="4" style="text-align:center;color:var(--muted);">No courses in progress</td></tr></tbody>`;
+        } else {
+          coursesTable.innerHTML = `
+            <thead><tr><th>Course</th><th>Progress</th><th>Modules</th><th>Due Date</th></tr></thead>
+            <tbody>${courses.map(c => `
+              <tr>
+                <td class="row-metric">${c.name}</td>
+                <td><span class="${c.progress >= 80 ? "val-green" : c.progress >= 50 ? "val-amber" : "val-red"}">${c.progress}%</span></td>
+                <td>${c.modules}</td>
+                <td>${c.dueDate}</td>
+              </tr>`).join("")}
+            </tbody>`;
+        }
+      }
+
+      const renderFocusTable = (tableId, items) => {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        table.innerHTML = `
+          <thead><tr><th>Tag</th><th>Views</th></tr></thead>
+          <tbody>${items.map(item => `
+            <tr><td class="row-metric">${item.tag}</td><td>${item.views}</td></tr>`).join("")}
+          </tbody>`;
+      };
+      renderFocusTable("allegoFocusTop", knowledge.focusTop);
+      renderFocusTable("allegoFocusLeast", knowledge.focusLeast);
+
+      const searchesTable = document.getElementById("allegoTopSearches");
+      if (searchesTable) {
+        searchesTable.innerHTML = `
+          <thead><tr><th>Search / Question</th><th>Count</th></tr></thead>
+          <tbody>${knowledge.topSearches.map(s => `
+            <tr><td class="row-metric">${s.query}</td><td>${s.count}</td></tr>`).join("")}
+          </tbody>`;
+      }
+    }
+
+    function renderAllegoPerformance(rep, period) {
+      const perf = getAllegoPerformance(rep, period);
+      const winRateDelta = perf.winRateWithDsr - perf.winRateWithoutDsr;
+      const deltaLabel = winRateDelta >= 0 ? `+${winRateDelta} pts` : `${winRateDelta} pts`;
+      const deltaCls = trafficClass(trafficLevel(winRateDelta / 30));
+
+      const withBox = document.getElementById("allegoWinRateWithDsr");
+      if (withBox) {
+        withBox.innerHTML = `
+          <div class="num-kpi__title">Deals Closed with DSR</div>
+          <div class="num-kpi__num kpi-traffic ${trafficClass(trafficLevel(perf.winRateWithDsr / 70))}">${perf.winRateWithDsr}%</div>
+          <div class="num-kpi__period">Win rate when a DSR is attached · ${period.headerPeriod}</div>`;
+      }
+
+      const withoutBox = document.getElementById("allegoWinRateWithoutDsr");
+      if (withoutBox) {
+        withoutBox.innerHTML = `
+          <div class="num-kpi__title">Deals Closed without DSR</div>
+          <div class="num-kpi__num">${perf.winRateWithoutDsr}%</div>
+          <div class="num-kpi__period">Win rate when no DSR is used · ${period.headerPeriod}</div>`;
+      }
+
+      const improvementBox = document.getElementById("allegoWinRateImprovement");
+      if (improvementBox) {
+        improvementBox.innerHTML = `
+          <div class="num-kpi__title">Win Rate Improvement</div>
+          <div class="num-kpi__num kpi-traffic ${deltaCls}">${deltaLabel}</div>
+          <div class="num-kpi__period">Uplift with DSR vs. without DSR</div>`;
+      }
+
+      const externalBox = document.getElementById("allegoExternalDsrUsage");
+      if (externalBox) {
+        externalBox.innerHTML = `
+          <div class="num-kpi__title">External Usage on DSR</div>
+          <div class="num-kpi__num">${perf.externalDsrUsage}</div>
+          <div class="num-kpi__period">Buyer-side views and interactions · ${period.headerPeriod}</div>`;
+      }
+
+      const effectivenessBox = document.getElementById("allegoContentEffectiveness");
+      if (effectivenessBox) {
+        const effCls = trafficClass(trafficLevel(perf.contentEffectiveness / 75));
+        effectivenessBox.innerHTML = `
+          <div class="num-kpi__title">Content Effectiveness</div>
+          <div class="num-kpi__num kpi-traffic ${effCls}">${perf.contentEffectiveness}%</div>
+          <div class="num-kpi__period">Engagement rate on DSR content · ${period.headerPeriod}</div>`;
+      }
+    }
+
+    function renderAllegoTab(rep, period) {
+      renderAllegoKnowledge(rep, period);
       renderSkillEvaluation(rep, period);
+      renderAllegoPerformance(rep, period);
     }
 
     function renderGongTab(rep, period) {
@@ -2875,8 +3165,7 @@
         renderWonDealsCombined(rep, drill, period);
         renderOpenCoverage(rep, drill, period);
         renderDealHealthSummary(rep);
-        renderProgressed(drill);
-        renderStaleDeals(rep);
+        renderDealStageStatus(rep, drill);
         renderExpiringDeals(rep);
         renderOpenDeals(rep);
         renderPipelineKpis(rep, period, drill);
