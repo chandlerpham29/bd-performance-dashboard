@@ -290,21 +290,21 @@
     .learning-card--red { border-left-color: var(--red); }
     .learning-card__rank {
       position: absolute;
-      top: 0.85rem;
-      right: 0.95rem;
-      font-size: 0.72rem;
-      font-weight: 700;
+      top: 0.75rem;
+      right: 0.85rem;
+      font-size: 1.05rem;
+      font-weight: 800;
       color: var(--text);
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 999px;
-      min-width: 2rem;
-      height: 2rem;
+      min-width: 2.75rem;
+      height: 2.75rem;
       display: flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
-      padding: 0 0.45rem;
+      padding: 0 0.55rem;
       z-index: 1;
     }
     .learning-card__rank--1 {
@@ -1192,6 +1192,12 @@
       return "red";
     }
 
+    function dsrWinRateImpactStatus(winRateWithDsr, winRateWithoutDsr) {
+      if (winRateWithDsr > winRateWithoutDsr) return "green";
+      if (winRateWithDsr < winRateWithoutDsr) return "red";
+      return "amber";
+    }
+
     function trafficClass(level) {
       return level === "green" ? "val-green" : level === "amber" ? "val-amber" : "val-red";
     }
@@ -1356,9 +1362,9 @@
           { name: "LegalEdge Partners", stage: "Qualified", pipeline: "New Business", amount: 16, lastProgress: "2026-05-28", staleDays: 8 },
         ],
         expiringDeals: [
-          { name: "FinServe APAC", stage: "Won", pipeline: "Expansion", amount: 42, subscriptionEndDate: "2026-09-30", elsaSolution: "ELSA Speak for Business — Enterprise" },
-          { name: "Acme Corp — Enterprise", stage: "Won", pipeline: "New Business", amount: 45, subscriptionEndDate: "2026-08-15", elsaSolution: "ELSA Speak for Business — Team" },
-          { name: "CloudNine SaaS", stage: "Won", pipeline: "New Business", amount: 28, subscriptionEndDate: "2026-07-28", elsaSolution: "ELSA Pro for Teams" },
+          { name: "FinServe APAC", stage: "Won", pipeline: "Expansion", amount: 42, subscriptionEndDate: "2026-09-30", elsaSolution: "ELSA Business" },
+          { name: "Acme Corp — Enterprise", stage: "Won", pipeline: "New Business", amount: 45, subscriptionEndDate: "2026-08-15", elsaSolution: "ELSA Business" },
+          { name: "CloudNine SaaS", stage: "Won", pipeline: "New Business", amount: 28, subscriptionEndDate: "2026-07-28", elsaSolution: "API" },
         ],
         openDeals: [
           { name: "Acme Corp — Enterprise", stage: "Proposal", pipeline: "New Business", amount: 45, forecast: "Commit", closeDate: "2026-06-28", nextStep: "Send revised pricing" },
@@ -1438,8 +1444,8 @@
           { name: "FinServe APAC Renewal", stage: "Negotiation", pipeline: "Expansion", amount: 42, lastProgress: "2026-05-10", staleDays: 26 },
         ],
         expiringDeals: [
-          { name: "GlobalTech Ltd — Renewal", stage: "Won", pipeline: "Expansion", amount: 62, subscriptionEndDate: "2026-10-20", elsaSolution: "ELSA Speak for Business — Enterprise" },
-          { name: "Pacific Airlines Training", stage: "Won", pipeline: "New Business", amount: 55, subscriptionEndDate: "2026-09-05", elsaSolution: "ELSA Aviation English" },
+          { name: "GlobalTech Ltd — Renewal", stage: "Won", pipeline: "Expansion", amount: 62, subscriptionEndDate: "2026-10-20", elsaSolution: "ELSA Business" },
+          { name: "Pacific Airlines Training", stage: "Won", pipeline: "New Business", amount: 55, subscriptionEndDate: "2026-09-05", elsaSolution: "ELSA Business" },
         ],
         openDeals: [
           { name: "FinServe APAC Renewal", stage: "Negotiation", pipeline: "Expansion", amount: 42, forecast: "Commit", closeDate: "2026-06-25", nextStep: "Final pricing approval" },
@@ -1519,7 +1525,7 @@
           { name: "MedHealth Group", stage: "Demo Completed", pipeline: "New Business", amount: 38, lastProgress: "2026-05-24", staleDays: 12 },
         ],
         expiringDeals: [
-          { name: "EduFirst Academy", stage: "Won", pipeline: "New Business", amount: 22, subscriptionEndDate: "2026-08-22", elsaSolution: "ELSA for Education" },
+          { name: "EduFirst Academy", stage: "Won", pipeline: "New Business", amount: 22, subscriptionEndDate: "2026-08-22", elsaSolution: "ELSA School" },
         ],
         openDeals: [
           { name: "Horizon Bank — Enterprise", stage: "Proposal", pipeline: "New Business", amount: 35, forecast: "Pipeline", closeDate: "2026-09-30", nextStep: "Re-engage economic buyer" },
@@ -2049,7 +2055,7 @@
           label: "Win Rate — DSR Impact",
           value: winRateDeltaLabel,
           meta: `With DSR: ${perf.wonWithDsr} won · ${perf.lostWithDsr} lost (${perf.winRateWithDsr}% win rate) · Without: ${perf.wonWithoutDsr} won · ${perf.lostWithoutDsr} lost (${perf.winRateWithoutDsr}% win rate)`,
-          status: trafficLevel(winRateDelta / 30),
+          status: dsrWinRateImpactStatus(perf.winRateWithDsr, perf.winRateWithoutDsr),
           action: "Win rate improvement when deals include a Digital Sales Room",
           drillKey: "summaryRevenueImpact",
         },
@@ -3219,7 +3225,7 @@
       }
     }
 
-    function renderAllegoPerfCard(title, total, won, lost, open, winRate, cssClass) {
+    function renderAllegoPerfCard(title, total, won, lost, winRate, cssClass) {
       const closed = won + lost;
       const winRateLabel = closed ? `${winRate}%` : "—";
       const winRateCls = !closed ? "" : winRate >= 60 ? "val-green" : winRate >= 40 ? "val-amber" : "val-red";
@@ -3244,7 +3250,6 @@
               <div class="allego-perf-card__stat-label">Win Rate</div>
             </div>
           </div>
-          <div class="action-card__meta" style="margin-top:0.65rem;text-align:center;">${closed} closed · ${open} open · win rate = won / (won + lost)</div>
         </div>`;
     }
 
@@ -3254,8 +3259,8 @@
       const compareBox = document.getElementById("allegoDsrComparison");
       if (compareBox) {
         compareBox.innerHTML =
-          renderAllegoPerfCard("With DSR", perf.totalWithDsr, perf.wonWithDsr, perf.lostWithDsr, perf.openWithDsr, perf.winRateWithDsr, "allego-perf-card--dsr") +
-          renderAllegoPerfCard("Without DSR", perf.totalWithoutDsr, perf.wonWithoutDsr, perf.lostWithoutDsr, perf.openWithoutDsr, perf.winRateWithoutDsr, "allego-perf-card--no-dsr");
+          renderAllegoPerfCard("With DSR", perf.totalWithDsr, perf.wonWithDsr, perf.lostWithDsr, perf.winRateWithDsr, "allego-perf-card--dsr") +
+          renderAllegoPerfCard("Without DSR", perf.totalWithoutDsr, perf.wonWithoutDsr, perf.lostWithoutDsr, perf.winRateWithoutDsr, "allego-perf-card--no-dsr");
       }
 
       const avgViewsBox = document.getElementById("allegoAvgDsrViews");
