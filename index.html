@@ -275,6 +275,7 @@
     }
     @media (max-width: 900px) { .learning-panel { grid-template-columns: 1fr; } }
     .learning-card {
+      position: relative;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -287,62 +288,51 @@
     .learning-card--green { border-left-color: var(--green); }
     .learning-card--amber { border-left-color: var(--amber); }
     .learning-card--red { border-left-color: var(--red); }
+    .learning-card__rank {
+      position: absolute;
+      top: 0.85rem;
+      right: 0.95rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      min-width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      padding: 0 0.45rem;
+      z-index: 1;
+    }
+    .learning-card__rank--1 {
+      color: #fcd34d;
+      border-color: rgba(252, 211, 77, 0.5);
+      background: rgba(252, 211, 77, 0.12);
+    }
     .learning-card__header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 0.5rem;
+      padding-right: 2.5rem;
     }
     .learning-card__body {
-      display: grid;
-      grid-template-columns: 1fr 1.4fr;
-      gap: 1rem;
+      display: flex;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       min-height: 5.5rem;
-    }
-    .learning-card__rank-block {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 0.75rem 0.5rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      min-height: 5rem;
-    }
-    .learning-card__rank-num {
-      font-size: 2rem;
-      font-weight: 800;
-      line-height: 1;
-      color: var(--text);
-    }
-    .learning-card__rank-num--1 { color: #fcd34d; }
-    .learning-card__rank-label {
-      font-size: 0.68rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-top: 0.35rem;
-    }
-    .learning-card__rank-of {
-      font-size: 0.62rem;
-      color: var(--muted);
-      margin-top: 0.15rem;
-    }
-    .learning-card__metric-block {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      padding: 0.35rem 0 0.15rem;
       text-align: center;
     }
     .learning-card__value {
-      font-size: 2.75rem;
-      font-weight: 700;
+      font-size: 3.25rem;
+      font-weight: 800;
       line-height: 1;
+      letter-spacing: -0.02em;
     }
     .learning-card__value.clickable { cursor: pointer; }
     .action-card {
@@ -509,10 +499,11 @@
     }
     .allego-perf-card__stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 0.75rem;
       text-align: center;
     }
+    @media (max-width: 700px) { .allego-perf-card__stats { grid-template-columns: repeat(2, 1fr); } }
     .allego-perf-card__stat-num {
       font-size: 1.75rem;
       font-weight: 700;
@@ -1215,19 +1206,13 @@
       const totalReps = Object.keys(REPS).length;
       el.innerHTML = cards.map(c => `
         <div class="learning-card learning-card--${c.status}">
+          <span class="learning-card__rank${c.rank === 1 ? " learning-card__rank--1" : ""}" title="Rank ${c.rank} of ${totalReps} reps">#${c.rank}</span>
           <div class="learning-card__header">
             <span class="action-card__badge">${c.badge}</span>
             <span class="traffic-dot traffic-dot--${c.status}" title="${trafficStatusLabel(c.status)}"></span>
           </div>
           <div class="learning-card__body">
-            <div class="learning-card__rank-block">
-              <div class="learning-card__rank-num${c.rank === 1 ? " learning-card__rank-num--1" : ""}">#${c.rank}</div>
-              <div class="learning-card__rank-label">Ranking</div>
-              <div class="learning-card__rank-of">of ${totalReps} reps</div>
-            </div>
-            <div class="learning-card__metric-block">
-              <div class="learning-card__value ${trafficClass(c.status)}${c.drillKey ? " clickable" : ""}"${c.drillKey ? ` data-action-drill="${c.drillKey}"` : ""}>${c.value}</div>
-            </div>
+            <div class="learning-card__value ${trafficClass(c.status)}${c.drillKey ? " clickable" : ""}"${c.drillKey ? ` data-action-drill="${c.drillKey}"` : ""}>${c.value}</div>
           </div>
           <div class="action-card__meta">${c.meta}</div>
           ${c.action ? `<div class="action-card__hint">${c.action}</div>` : ""}
@@ -2849,8 +2834,10 @@
         performance: {
           wonWithDsr: { y: 11, q: 5, m: 2, weeks: [1, 0, 1, 0] },
           lostWithDsr: { y: 5, q: 3, m: 0, weeks: [0, 0, 0, 0] },
+          openWithDsr: { y: 3, q: 2, m: 1, weeks: [0, 0, 1, 0] },
           wonWithoutDsr: { y: 5, q: 3, m: 1, weeks: [0, 1, 0, 0] },
           lostWithoutDsr: { y: 7, q: 4, m: 1, weeks: [1, 0, 0, 0] },
+          openWithoutDsr: { y: 2, q: 1, m: 0, weeks: [0, 0, 0, 0] },
           totalDsrPages: { y: 18, q: 5, m: 2, weeks: [0, 1, 1, 1] },
           avgDsrPageViews: { y: 8.7, q: 8.4, m: 7.5, weeks: [6.2, 7.0, 7.8, 8.4] },
           topDsrContent: [
@@ -2928,8 +2915,10 @@
         performance: {
           wonWithDsr: { y: 18, q: 9, m: 3, weeks: [1, 1, 1, 0] },
           lostWithDsr: { y: 4, q: 2, m: 0, weeks: [0, 0, 0, 0] },
+          openWithDsr: { y: 4, q: 3, m: 1, weeks: [0, 1, 0, 1] },
           wonWithoutDsr: { y: 7, q: 4, m: 1, weeks: [0, 0, 1, 0] },
           lostWithoutDsr: { y: 5, q: 3, m: 1, weeks: [0, 1, 0, 0] },
+          openWithoutDsr: { y: 2, q: 1, m: 1, weeks: [0, 0, 0, 1] },
           totalDsrPages: { y: 32, q: 9, m: 4, weeks: [1, 2, 2, 4] },
           avgDsrPageViews: { y: 12.4, q: 11.8, m: 10.5, weeks: [8.5, 9.2, 10.0, 11.8] },
           topDsrContent: [
@@ -3005,8 +2994,10 @@
         performance: {
           wonWithDsr: { y: 4, q: 1, m: 1, weeks: [0, 0, 1, 0] },
           lostWithDsr: { y: 2, q: 1, m: 0, weeks: [0, 0, 0, 0] },
+          openWithDsr: { y: 2, q: 1, m: 0, weeks: [0, 0, 0, 0] },
           wonWithoutDsr: { y: 3, q: 1, m: 0, weeks: [0, 0, 0, 0] },
           lostWithoutDsr: { y: 4, q: 2, m: 1, weeks: [0, 0, 0, 1] },
+          openWithoutDsr: { y: 3, q: 2, m: 1, weeks: [0, 1, 0, 0] },
           totalDsrPages: { y: 8, q: 2, m: 1, weeks: [0, 0, 0, 1] },
           avgDsrPageViews: { y: 5.2, q: 4.8, m: 4.0, weeks: [3.0, 3.5, 4.0, 4.8] },
           topDsrContent: [
@@ -3123,15 +3114,21 @@
       const p = ALLEGO[rep].performance;
       const wonWithDsr = getPeriodValue(p.wonWithDsr, period);
       const lostWithDsr = getPeriodValue(p.lostWithDsr, period);
+      const openWithDsr = getPeriodValue(p.openWithDsr, period);
       const wonWithoutDsr = getPeriodValue(p.wonWithoutDsr, period);
       const lostWithoutDsr = getPeriodValue(p.lostWithoutDsr, period);
+      const openWithoutDsr = getPeriodValue(p.openWithoutDsr, period);
       return {
         wonWithDsr,
         lostWithDsr,
+        openWithDsr,
         wonWithoutDsr,
         lostWithoutDsr,
+        openWithoutDsr,
         closedWithDsr: wonWithDsr + lostWithDsr,
         closedWithoutDsr: wonWithoutDsr + lostWithoutDsr,
+        totalWithDsr: wonWithDsr + lostWithDsr + openWithDsr,
+        totalWithoutDsr: wonWithoutDsr + lostWithoutDsr + openWithoutDsr,
         winRateWithDsr: calcWinRate(wonWithDsr, lostWithDsr),
         winRateWithoutDsr: calcWinRate(wonWithoutDsr, lostWithoutDsr),
         totalDsrPages: getPeriodValue(p.totalDsrPages, period),
@@ -3222,7 +3219,7 @@
       }
     }
 
-    function renderAllegoPerfCard(title, won, lost, winRate, cssClass) {
+    function renderAllegoPerfCard(title, total, won, lost, open, winRate, cssClass) {
       const closed = won + lost;
       const winRateLabel = closed ? `${winRate}%` : "—";
       const winRateCls = !closed ? "" : winRate >= 60 ? "val-green" : winRate >= 40 ? "val-amber" : "val-red";
@@ -3230,6 +3227,10 @@
         <div class="allego-perf-card ${cssClass}">
           <div class="allego-perf-card__title">${title}</div>
           <div class="allego-perf-card__stats">
+            <div>
+              <div class="allego-perf-card__stat-num">${total}</div>
+              <div class="allego-perf-card__stat-label">Total Deals</div>
+            </div>
             <div>
               <div class="allego-perf-card__stat-num">${won}</div>
               <div class="allego-perf-card__stat-label">Won</div>
@@ -3243,7 +3244,7 @@
               <div class="allego-perf-card__stat-label">Win Rate</div>
             </div>
           </div>
-          <div class="action-card__meta" style="margin-top:0.65rem;text-align:center;">${closed} closed · won / (won + lost)</div>
+          <div class="action-card__meta" style="margin-top:0.65rem;text-align:center;">${closed} closed · ${open} open · win rate = won / (won + lost)</div>
         </div>`;
     }
 
@@ -3253,8 +3254,8 @@
       const compareBox = document.getElementById("allegoDsrComparison");
       if (compareBox) {
         compareBox.innerHTML =
-          renderAllegoPerfCard("With DSR", perf.wonWithDsr, perf.lostWithDsr, perf.winRateWithDsr, "allego-perf-card--dsr") +
-          renderAllegoPerfCard("Without DSR", perf.wonWithoutDsr, perf.lostWithoutDsr, perf.winRateWithoutDsr, "allego-perf-card--no-dsr");
+          renderAllegoPerfCard("With DSR", perf.totalWithDsr, perf.wonWithDsr, perf.lostWithDsr, perf.openWithDsr, perf.winRateWithDsr, "allego-perf-card--dsr") +
+          renderAllegoPerfCard("Without DSR", perf.totalWithoutDsr, perf.wonWithoutDsr, perf.lostWithoutDsr, perf.openWithoutDsr, perf.winRateWithoutDsr, "allego-perf-card--no-dsr");
       }
 
       const avgViewsBox = document.getElementById("allegoAvgDsrViews");
