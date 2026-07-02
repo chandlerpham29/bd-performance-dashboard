@@ -268,6 +268,83 @@
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1rem;
     }
+    .learning-panel {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 900px) { .learning-panel { grid-template-columns: 1fr; } }
+    .learning-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      border-left: 4px solid var(--border);
+    }
+    .learning-card--green { border-left-color: var(--green); }
+    .learning-card--amber { border-left-color: var(--amber); }
+    .learning-card--red { border-left-color: var(--red); }
+    .learning-card__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .learning-card__body {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 1rem;
+      align-items: center;
+      min-height: 5.5rem;
+    }
+    .learning-card__rank-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0.75rem 0.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      min-height: 5rem;
+    }
+    .learning-card__rank-num {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--text);
+    }
+    .learning-card__rank-num--1 { color: #fcd34d; }
+    .learning-card__rank-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.35rem;
+    }
+    .learning-card__rank-of {
+      font-size: 0.62rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+    .learning-card__metric-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .learning-card__value {
+      font-size: 2.75rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .learning-card__value.clickable { cursor: pointer; }
     .action-card {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -878,7 +955,7 @@
 
     <section class="section-highlight">
       <h2>Learning Time</h2>
-      <div class="action-panel" id="learningTimePanel"></div>
+      <div class="learning-panel" id="learningTimePanel"></div>
     </section>
 
     <section class="section-highlight">
@@ -1130,6 +1207,38 @@
 
     function trafficStatusLabel(level) {
       return level === "green" ? "On track" : level === "amber" ? "Needs attention" : "At risk";
+    }
+
+    function renderLearningTimePanel(containerId, cards, drill) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      const totalReps = Object.keys(REPS).length;
+      el.innerHTML = cards.map(c => `
+        <div class="learning-card learning-card--${c.status}">
+          <div class="learning-card__header">
+            <span class="action-card__badge">${c.badge}</span>
+            <span class="traffic-dot traffic-dot--${c.status}" title="${trafficStatusLabel(c.status)}"></span>
+          </div>
+          <div class="learning-card__body">
+            <div class="learning-card__rank-block">
+              <div class="learning-card__rank-num${c.rank === 1 ? " learning-card__rank-num--1" : ""}">#${c.rank}</div>
+              <div class="learning-card__rank-label">Ranking</div>
+              <div class="learning-card__rank-of">of ${totalReps} reps</div>
+            </div>
+            <div class="learning-card__metric-block">
+              <div class="learning-card__value ${trafficClass(c.status)}${c.drillKey ? " clickable" : ""}"${c.drillKey ? ` data-action-drill="${c.drillKey}"` : ""}>${c.value}</div>
+            </div>
+          </div>
+          <div class="action-card__meta">${c.meta}</div>
+          ${c.action ? `<div class="action-card__hint">${c.action}</div>` : ""}
+        </div>
+      `).join("");
+      el.querySelectorAll("[data-action-drill]").forEach(node => {
+        node.addEventListener("click", () => {
+          const d = drill[node.dataset.actionDrill];
+          if (d) openModal(d.title, d.headers, d.rows);
+        });
+      });
     }
 
     function renderActionPanel(containerId, cards, drill) {
@@ -1533,10 +1642,10 @@
           ["Product Knowledge", "75", "71", "+6%"],
           ["Value Prop & Objections", "72", "68", "+6%"],
         ]},
-        summaryRevenueImpact: { title: "Win Rate — DSR Impact", headers: ["Category", "Deals", "Closed", "Win Rate"], rows: [
-          ["With DSR", "16", "11", "68%"],
-          ["Without DSR", "12", "5", "42%"],
-          ["Improvement", "—", "—", "+26 pts"],
+        summaryRevenueImpact: { title: "Win Rate — DSR Impact", headers: ["Category", "Won", "Lost", "Win Rate"], rows: [
+          ["With DSR", "5", "3", "63%"],
+          ["Without DSR", "3", "4", "43%"],
+          ["Improvement", "—", "—", "+20 pts"],
         ]},
       };
     }
@@ -1881,7 +1990,7 @@
       const allegoRatio = allego.learningTimeHours / allegoHourTarget;
       const gongRatio = gongUsage.learningTimeHours.a / gongHourTarget;
 
-      renderActionPanel("learningTimePanel", [
+      renderLearningTimePanel("learningTimePanel", [
         {
           badge: "ELSA",
           label: "",
@@ -1954,7 +2063,7 @@
           badge: "Performance",
           label: "Win Rate — DSR Impact",
           value: winRateDeltaLabel,
-          meta: `With DSR: ${perf.dealsWithDsr} deals · ${perf.closedWithDsr} closed (${perf.winRateWithDsr}%) · Without: ${perf.dealsWithoutDsr} deals · ${perf.closedWithoutDsr} closed (${perf.winRateWithoutDsr}%)`,
+          meta: `With DSR: ${perf.wonWithDsr} won · ${perf.lostWithDsr} lost (${perf.winRateWithDsr}% win rate) · Without: ${perf.wonWithoutDsr} won · ${perf.lostWithoutDsr} lost (${perf.winRateWithoutDsr}% win rate)`,
           status: trafficLevel(winRateDelta / 30),
           action: "Win rate improvement when deals include a Digital Sales Room",
           drillKey: "summaryRevenueImpact",
@@ -2738,10 +2847,10 @@
           ],
         },
         performance: {
-          dealsWithDsr: { y: 16, q: 8, m: 3, weeks: [1, 2, 2, 3] },
-          closedWithDsr: { y: 11, q: 5, m: 2, weeks: [1, 1, 1, 2] },
-          dealsWithoutDsr: { y: 12, q: 7, m: 2, weeks: [1, 0, 1, 0] },
-          closedWithoutDsr: { y: 5, q: 3, m: 1, weeks: [0, 1, 0, 0] },
+          wonWithDsr: { y: 11, q: 5, m: 2, weeks: [1, 0, 1, 0] },
+          lostWithDsr: { y: 5, q: 3, m: 0, weeks: [0, 0, 0, 0] },
+          wonWithoutDsr: { y: 5, q: 3, m: 1, weeks: [0, 1, 0, 0] },
+          lostWithoutDsr: { y: 7, q: 4, m: 1, weeks: [1, 0, 0, 0] },
           totalDsrPages: { y: 18, q: 5, m: 2, weeks: [0, 1, 1, 1] },
           avgDsrPageViews: { y: 8.7, q: 8.4, m: 7.5, weeks: [6.2, 7.0, 7.8, 8.4] },
           topDsrContent: [
@@ -2817,10 +2926,10 @@
           ],
         },
         performance: {
-          dealsWithDsr: { y: 24, q: 12, m: 4, weeks: [2, 3, 3, 4] },
-          closedWithDsr: { y: 18, q: 9, m: 3, weeks: [1, 2, 2, 3] },
-          dealsWithoutDsr: { y: 14, q: 8, m: 3, weeks: [1, 1, 0, 1] },
-          closedWithoutDsr: { y: 7, q: 4, m: 1, weeks: [0, 1, 0, 0] },
+          wonWithDsr: { y: 18, q: 9, m: 3, weeks: [1, 1, 1, 0] },
+          lostWithDsr: { y: 4, q: 2, m: 0, weeks: [0, 0, 0, 0] },
+          wonWithoutDsr: { y: 7, q: 4, m: 1, weeks: [0, 0, 1, 0] },
+          lostWithoutDsr: { y: 5, q: 3, m: 1, weeks: [0, 1, 0, 0] },
           totalDsrPages: { y: 32, q: 9, m: 4, weeks: [1, 2, 2, 4] },
           avgDsrPageViews: { y: 12.4, q: 11.8, m: 10.5, weeks: [8.5, 9.2, 10.0, 11.8] },
           topDsrContent: [
@@ -2894,10 +3003,10 @@
           ],
         },
         performance: {
-          dealsWithDsr: { y: 8, q: 3, m: 1, weeks: [0, 0, 1, 0] },
-          closedWithDsr: { y: 4, q: 1, m: 0, weeks: [0, 0, 0, 0] },
-          dealsWithoutDsr: { y: 10, q: 5, m: 2, weeks: [1, 1, 0, 0] },
-          closedWithoutDsr: { y: 3, q: 1, m: 0, weeks: [0, 0, 0, 0] },
+          wonWithDsr: { y: 4, q: 1, m: 1, weeks: [0, 0, 1, 0] },
+          lostWithDsr: { y: 2, q: 1, m: 0, weeks: [0, 0, 0, 0] },
+          wonWithoutDsr: { y: 3, q: 1, m: 0, weeks: [0, 0, 0, 0] },
+          lostWithoutDsr: { y: 4, q: 2, m: 1, weeks: [0, 0, 0, 1] },
           totalDsrPages: { y: 8, q: 2, m: 1, weeks: [0, 0, 0, 1] },
           avgDsrPageViews: { y: 5.2, q: 4.8, m: 4.0, weeks: [3.0, 3.5, 4.0, 4.8] },
           topDsrContent: [
@@ -3005,19 +3114,26 @@
       },
     };
 
+    function calcWinRate(won, lost) {
+      const total = won + lost;
+      return total ? Math.round((won / total) * 100) : 0;
+    }
+
     function getAllegoPerformance(rep, period) {
       const p = ALLEGO[rep].performance;
-      const dealsWithDsr = getPeriodValue(p.dealsWithDsr, period);
-      const closedWithDsr = getPeriodValue(p.closedWithDsr, period);
-      const dealsWithoutDsr = getPeriodValue(p.dealsWithoutDsr, period);
-      const closedWithoutDsr = getPeriodValue(p.closedWithoutDsr, period);
+      const wonWithDsr = getPeriodValue(p.wonWithDsr, period);
+      const lostWithDsr = getPeriodValue(p.lostWithDsr, period);
+      const wonWithoutDsr = getPeriodValue(p.wonWithoutDsr, period);
+      const lostWithoutDsr = getPeriodValue(p.lostWithoutDsr, period);
       return {
-        dealsWithDsr,
-        closedWithDsr,
-        dealsWithoutDsr,
-        closedWithoutDsr,
-        winRateWithDsr: dealsWithDsr ? Math.round((closedWithDsr / dealsWithDsr) * 100) : 0,
-        winRateWithoutDsr: dealsWithoutDsr ? Math.round((closedWithoutDsr / dealsWithoutDsr) * 100) : 0,
+        wonWithDsr,
+        lostWithDsr,
+        wonWithoutDsr,
+        lostWithoutDsr,
+        closedWithDsr: wonWithDsr + lostWithDsr,
+        closedWithoutDsr: wonWithoutDsr + lostWithoutDsr,
+        winRateWithDsr: calcWinRate(wonWithDsr, lostWithDsr),
+        winRateWithoutDsr: calcWinRate(wonWithoutDsr, lostWithoutDsr),
         totalDsrPages: getPeriodValue(p.totalDsrPages, period),
         avgDsrPageViews: getPeriodValue(p.avgDsrPageViews, period),
         topDsrContent: p.topDsrContent,
@@ -3106,37 +3222,39 @@
       }
     }
 
-    function renderAllegoPerfCard(title, deals, closed, winRate, cssClass) {
+    function renderAllegoPerfCard(title, won, lost, winRate, cssClass) {
+      const closed = won + lost;
+      const winRateLabel = closed ? `${winRate}%` : "—";
+      const winRateCls = !closed ? "" : winRate >= 60 ? "val-green" : winRate >= 40 ? "val-amber" : "val-red";
       return `
         <div class="allego-perf-card ${cssClass}">
           <div class="allego-perf-card__title">${title}</div>
           <div class="allego-perf-card__stats">
             <div>
-              <div class="allego-perf-card__stat-num">${deals}</div>
-              <div class="allego-perf-card__stat-label">Deals</div>
+              <div class="allego-perf-card__stat-num">${won}</div>
+              <div class="allego-perf-card__stat-label">Won</div>
             </div>
             <div>
-              <div class="allego-perf-card__stat-num">${closed}</div>
-              <div class="allego-perf-card__stat-label">Closed</div>
+              <div class="allego-perf-card__stat-num">${lost}</div>
+              <div class="allego-perf-card__stat-label">Lost</div>
             </div>
             <div>
-              <div class="allego-perf-card__stat-num"><span class="${winRate >= 60 ? "val-green" : winRate >= 40 ? "val-amber" : "val-red"}">${winRate}%</span></div>
+              <div class="allego-perf-card__stat-num">${winRateCls ? `<span class="${winRateCls}">${winRateLabel}</span>` : winRateLabel}</div>
               <div class="allego-perf-card__stat-label">Win Rate</div>
             </div>
           </div>
+          <div class="action-card__meta" style="margin-top:0.65rem;text-align:center;">${closed} closed · won / (won + lost)</div>
         </div>`;
     }
 
     function renderAllegoPerformance(rep, period) {
       const perf = getAllegoPerformance(rep, period);
-      const winRateDelta = perf.winRateWithDsr - perf.winRateWithoutDsr;
-      const deltaLabel = winRateDelta >= 0 ? `+${winRateDelta} pts` : `${winRateDelta} pts`;
 
       const compareBox = document.getElementById("allegoDsrComparison");
       if (compareBox) {
         compareBox.innerHTML =
-          renderAllegoPerfCard("With DSR", perf.dealsWithDsr, perf.closedWithDsr, perf.winRateWithDsr, "allego-perf-card--dsr") +
-          renderAllegoPerfCard("Without DSR", perf.dealsWithoutDsr, perf.closedWithoutDsr, perf.winRateWithoutDsr, "allego-perf-card--no-dsr");
+          renderAllegoPerfCard("With DSR", perf.wonWithDsr, perf.lostWithDsr, perf.winRateWithDsr, "allego-perf-card--dsr") +
+          renderAllegoPerfCard("Without DSR", perf.wonWithoutDsr, perf.lostWithoutDsr, perf.winRateWithoutDsr, "allego-perf-card--no-dsr");
       }
 
       const avgViewsBox = document.getElementById("allegoAvgDsrViews");
