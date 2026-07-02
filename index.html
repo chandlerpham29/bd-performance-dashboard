@@ -334,6 +334,13 @@
       line-height: 1;
       letter-spacing: -0.02em;
     }
+    .learning-card__value .learning-card__unit {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-left: 0.2rem;
+      letter-spacing: 0;
+    }
     .learning-card__value.clickable { cursor: pointer; }
     .action-card {
       background: var(--surface2);
@@ -1880,7 +1887,7 @@
     function getPlatformRank(repKey, period, platform) {
       const entries = Object.keys(REPS).map(key => {
         let value;
-        if (platform === "elsa") value = getElsaValue(PROFILES[key].elsa, period).sessions;
+        if (platform === "elsa") value = getElsaValue(PROFILES[key].elsa, period).minutes / 60;
         else if (platform === "allego") value = getAllegoUsage(key, period).learningTimeHours;
         else value = getGongForPeriod(key, period).usage.learningTimeHours.a;
         return { key, value };
@@ -1890,7 +1897,8 @@
     }
 
     function formatLearningValue(num) {
-      return num >= 10 ? String(Math.round(num)) : num.toFixed(1);
+      const n = num >= 10 ? String(Math.round(num)) : num.toFixed(1);
+      return `${n} <span class="learning-card__unit">hrs</span>`;
     }
 
     function renderCombinedScorecard(rep, drill, table1Period, table2Period, period) {
@@ -1985,11 +1993,11 @@
         {
           badge: "ELSA",
           label: "",
-          value: String(elsaVal.sessions),
+          value: formatLearningValue(elsaHoursNum),
           rank: getPlatformRank(rep, period, "elsa"),
-          meta: `Target: ${elsaSessionTarget}`,
+          meta: `Target: ${elsaHourTarget} hrs`,
           status: trafficLevel(elsaRatio),
-          action: "ELSA practice sessions completed in the selected period",
+          action: "Time spent on ELSA app practice in the selected period",
           drillKey: "learningTimeElsa",
         },
         {
@@ -1997,7 +2005,7 @@
           label: "",
           value: formatLearningValue(allego.learningTimeHours),
           rank: getPlatformRank(rep, period, "allego"),
-          meta: `Target: ${allegoHourTarget}`,
+          meta: `Target: ${allegoHourTarget} hrs`,
           status: trafficLevel(allegoRatio),
           action: "Time invested on Allego courses and enablement content",
           drillKey: "learningTimeAllego",
@@ -2007,7 +2015,7 @@
           label: "",
           value: formatLearningValue(gongUsage.learningTimeHours.a),
           rank: getPlatformRank(rep, period, "gong"),
-          meta: `Target: ${gongHourTarget}`,
+          meta: `Target: ${gongHourTarget} hrs`,
           status: trafficLevel(gongRatio),
           action: "Time spent reviewing recordings and coaching on Gong",
           drillKey: "learningTimeGong",
