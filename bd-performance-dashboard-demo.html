@@ -292,20 +292,26 @@
       position: absolute;
       top: 0.75rem;
       right: 0.85rem;
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: 800;
       color: var(--text);
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 999px;
-      min-width: 2.75rem;
+      min-width: 3.5rem;
       height: 2.75rem;
       display: flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
-      padding: 0 0.55rem;
+      padding: 0 0.5rem;
       z-index: 1;
+      white-space: nowrap;
+    }
+    .learning-card__rank-total {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
     }
     .learning-card__rank--1 {
       color: #fcd34d;
@@ -1219,7 +1225,7 @@
       const totalReps = Object.keys(REPS).length;
       el.innerHTML = cards.map(c => `
         <div class="learning-card learning-card--${c.status}">
-          <span class="learning-card__rank${c.rank === 1 ? " learning-card__rank--1" : ""}" title="Rank ${c.rank} of ${totalReps} reps">#${c.rank}</span>
+          <span class="learning-card__rank${c.rank === 1 ? " learning-card__rank--1" : ""}" title="Rank ${c.rank} of ${totalReps} reps">#${c.rank}<span class="learning-card__rank-total">/${totalReps}</span></span>
           <div class="learning-card__header">
             <span class="action-card__badge">${c.badge}</span>
             <span class="traffic-dot traffic-dot--${c.status}" title="${trafficStatusLabel(c.status)}"></span>
@@ -1896,9 +1902,12 @@
       return idx >= 0 ? idx + 1 : null;
     }
 
+    function formatLearningHours(num) {
+      return num >= 10 ? String(Math.round(num)) : num.toFixed(1);
+    }
+
     function formatLearningValue(num) {
-      const n = num >= 10 ? String(Math.round(num)) : num.toFixed(1);
-      return `${n} <span class="learning-card__unit">hrs</span>`;
+      return `${formatLearningHours(num)} <span class="learning-card__unit">hrs</span>`;
     }
 
     function renderCombinedScorecard(rep, drill, table1Period, table2Period, period) {
@@ -1995,7 +2004,7 @@
           label: "",
           value: formatLearningValue(elsaHoursNum),
           rank: getPlatformRank(rep, period, "elsa"),
-          meta: `Target: ${elsaHourTarget} hrs`,
+          meta: `Target: ${formatLearningHours(elsaHourTarget)} hrs`,
           status: trafficLevel(elsaRatio),
           action: "Time spent on ELSA app practice in the selected period",
           drillKey: "learningTimeElsa",
@@ -2005,7 +2014,7 @@
           label: "",
           value: formatLearningValue(allego.learningTimeHours),
           rank: getPlatformRank(rep, period, "allego"),
-          meta: `Target: ${allegoHourTarget} hrs`,
+          meta: `Target: ${formatLearningHours(allegoHourTarget)} hrs`,
           status: trafficLevel(allegoRatio),
           action: "Time invested on Allego courses and enablement content",
           drillKey: "learningTimeAllego",
@@ -2015,7 +2024,7 @@
           label: "",
           value: formatLearningValue(gongUsage.learningTimeHours.a),
           rank: getPlatformRank(rep, period, "gong"),
-          meta: `Target: ${gongHourTarget} hrs`,
+          meta: `Target: ${formatLearningHours(gongHourTarget)} hrs`,
           status: trafficLevel(gongRatio),
           action: "Time spent reviewing recordings and coaching on Gong",
           drillKey: "learningTimeGong",
