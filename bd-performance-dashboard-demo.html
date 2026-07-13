@@ -2654,13 +2654,14 @@
 
     function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
 
-    function targetLinePlugin(target, color) {
+    function targetLinePlugin(target, color, labelText) {
       return {
         id: "targetLine",
         afterDraw(chart) {
           const { ctx, chartArea, scales } = chart;
           const y = scales.y.getPixelForValue(target);
           if (y < chartArea.top || y > chartArea.bottom) return;
+          const label = labelText || ("Target: " + target);
           ctx.save();
           ctx.strokeStyle = color || "#fbbf24";
           ctx.setLineDash([6, 4]);
@@ -2671,7 +2672,8 @@
           ctx.stroke();
           ctx.fillStyle = color || "#fbbf24";
           ctx.font = "bold 11px 'Segoe UI', sans-serif";
-          ctx.fillText("Target: " + target, chartArea.right - 68, y - 4);
+          ctx.textAlign = "right";
+          ctx.fillText(label, chartArea.right - 4, y - 4);
           ctx.restore();
         },
       };
@@ -2700,7 +2702,7 @@
             if (canvas) canvas.style.cursor = elements.length && drillByIndex ? "pointer" : "default";
           },
         },
-        plugins: [targetLinePlugin(target, "#fbbf24"), barDataLabelsPlugin()],
+        plugins: [targetLinePlugin(target, "#fbbf24", "Target: " + target + "/wk"), barDataLabelsPlugin()],
       });
     }
 
@@ -2724,14 +2726,16 @@
       };
     }
 
-    function stackedPipelineMoMChart(id, labels, newBizData, renewalData, drillByIndex) {
+    function stackedPipelineMoMChart(id, labels, newBizData, renewalData, drillByIndex, target) {
       destroyChart(id);
       const totals = labels.map((_, i) => newBizData[i] + renewalData[i]);
-      const maxVal = Math.max(...totals, 1);
+      const maxVal = Math.max(...totals, target || 0, 1);
       const yStep = Math.max(10, Math.ceil(maxVal / 5));
       const canvas = document.getElementById(id);
       const chartBox = canvas ? canvas.closest(".chart-box") : null;
       if (chartBox) chartBox.classList.toggle("chart-box--clickable", !!drillByIndex);
+      const plugins = [stackTotalLabelsPlugin()];
+      if (target != null) plugins.push(targetLinePlugin(target, "#fbbf24", "Target: $" + target + "K"));
       charts[id] = new Chart(canvas, {
         type: "bar",
         data: {
@@ -2764,7 +2768,7 @@
             if (canvas) canvas.style.cursor = elements.length && drillByIndex ? "pointer" : "default";
           },
         },
-        plugins: [stackTotalLabelsPlugin()],
+        plugins,
       });
     }
 
@@ -2803,19 +2807,22 @@
     function renderCharts(rep, period) {
       const p = PROFILES[rep];
       const chartDrill = getChartDrillData(rep, period);
+      const weekPeriod = { type: "week", monthsCount: 1 };
 
       const pipe = chartSliceOpenPipeWoW(p.openPipeWeek);
-      stackedPipelineMoMChart("openPipeMoM", pipe.labels, pipe.newBiz, pipe.renewal, chartDrill.openPipe);
+      // 3x coverage of remaining gap — same green threshold used in Open Pipeline Coverage
+      const openPipeTarget = p.openPipe.gap * 3;
+      stackedPipelineMoMChart("openPipeMoM", pipe.labels, pipe.newBiz, pipe.renewal, chartDrill.openPipe, openPipeTarget);
 
-      const newBizWeekTarget = Math.ceil(p.newBizTarget / 4);
+      const newBizWeekTarget = periodTarget(p.newBizTarget, weekPeriod);
       const newBiz = chartSliceWoW(p.newBizWeek);
       barChartWithTarget("newBizChart", "# New Biz", newBiz.labels, newBiz.data, newBizWeekTarget, null, chartDrill.newBiz);
 
-      const demoWeekTarget = Math.ceil(p.demoTarget / 4);
+      const demoWeekTarget = periodTarget(p.demoTarget, weekPeriod);
       const demo = chartSliceWoW(p.demoWeek);
       barChartWithTarget("demoChart", "# Demos", demo.labels, demo.data, demoWeekTarget, null, chartDrill.demo);
 
-      const trialWeekTarget = Math.ceil(p.trialTarget / 4);
+      const trialWeekTarget = periodTarget(p.trialTarget, weekPeriod);
       const trial = chartSliceWoW(p.trialWeek);
       barChartWithTarget("trialChart", "# Trials", trial.labels, trial.data, trialWeekTarget, null, chartDrill.trial);
     }
