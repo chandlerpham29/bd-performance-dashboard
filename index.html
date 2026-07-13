@@ -1362,10 +1362,10 @@
           { newBiz: 27, renewal: 136 },
           { newBiz: 28, renewal: 140 },
         ],
-        newBizMoM: [3, 4, 5, 4, 6, 4], newBizTarget: 5, newBizWeek: [1, 1, 1, 1],
+        newBizMoM: [12, 14, 16, 15, 18, 16], newBizTarget: 20, newBizWeek: [4, 5, 3, 4],
         newBizPipeMoM: [88, 102, 95, 105, 130, 115], newBizPipeTarget: 120, newBizPipeWeek: [28, 32, 30, 35],
-        demoMoM: [1, 2, 2, 1, 2, 1], demoTarget: 2, demoWeek: [0, 1, 0, 0],
-        trialMoM: [1, 1, 1, 1, 1, 1], trialTarget: 1, trialWeek: [0, 1, 0, 0],
+        demoMoM: [14, 16, 18, 15, 17, 16], demoTarget: 20, demoWeek: [3, 4, 5, 4],
+        trialMoM: [5, 6, 7, 6, 8, 7], trialTarget: 8, trialWeek: [1, 2, 2, 1],
         activities: {
           existing: { y: 32, q: 18, m: 5, weeks: [2, 3, 2, 4] },
           newLeads: { y: 12, q: 7, m: 2, weeks: [1, 1, 0, 0] },
@@ -1451,10 +1451,10 @@
           { newBiz: 32, renewal: 96 },
           { newBiz: 34, renewal: 101 },
         ],
-        newBizMoM: [4, 5, 6, 5, 7, 5], newBizTarget: 6, newBizWeek: [1, 2, 1, 1],
+        newBizMoM: [16, 18, 20, 18, 22, 20], newBizTarget: 24, newBizWeek: [5, 6, 4, 5],
         newBizPipeMoM: [120, 140, 135, 145, 160, 155], newBizPipeTarget: 150, newBizPipeWeek: [38, 42, 40, 45],
-        demoMoM: [2, 2, 3, 2, 3, 3], demoTarget: 3, demoWeek: [1, 1, 1, 0],
-        trialMoM: [1, 2, 2, 1, 2, 2], trialTarget: 2, trialWeek: [0, 1, 1, 0],
+        demoMoM: [18, 20, 22, 19, 23, 21], demoTarget: 24, demoWeek: [4, 5, 6, 5],
+        trialMoM: [7, 8, 9, 8, 10, 9], trialTarget: 12, trialWeek: [2, 3, 2, 3],
         activities: {
           existing: { y: 48, q: 26, m: 8, weeks: [3, 3, 1, 1] },
           newLeads: { y: 24, q: 14, m: 4, weeks: [1, 2, 1, 0] },
@@ -1537,10 +1537,10 @@
           { newBiz: 19, renewal: 110 },
           { newBiz: 20, renewal: 113 },
         ],
-        newBizMoM: [2, 2, 3, 2, 3, 2], newBizTarget: 4, newBizWeek: [0, 1, 0, 1],
+        newBizMoM: [10, 12, 14, 12, 15, 13], newBizTarget: 16, newBizWeek: [2, 3, 2, 4],
         newBizPipeMoM: [60, 72, 68, 70, 85, 78], newBizPipeTarget: 100, newBizPipeWeek: [18, 22, 20, 24],
-        demoMoM: [1, 1, 1, 0, 1, 1], demoTarget: 2, demoWeek: [0, 1, 0, 0],
-        trialMoM: [0, 1, 1, 0, 1, 0], trialTarget: 1, trialWeek: [0, 0, 0, 0],
+        demoMoM: [10, 12, 14, 11, 13, 12], demoTarget: 16, demoWeek: [2, 3, 2, 3],
+        trialMoM: [3, 4, 5, 4, 5, 4], trialTarget: 8, trialWeek: [1, 1, 2, 1],
         activities: {
           existing: { y: 20, q: 11, m: 3, weeks: [1, 1, 1, 0] },
           newLeads: { y: 7, q: 4, m: 1, weeks: [0, 1, 0, 0] },
@@ -1729,7 +1729,8 @@
     function periodTarget(monthlyTarget, period) {
       if (period.type === "year" || period.type === "quarter") return monthlyTarget * period.monthsCount;
       if (period.type === "month") return monthlyTarget;
-      return Math.ceil(monthlyTarget / 4);
+      // Exact weekly pacing: 20/month => 5/week
+      return monthlyTarget / 4;
     }
 
     function sumIndices(arr, indices) {
@@ -2602,7 +2603,7 @@
     const STACK_NEW_BIZ = "rgba(96, 165, 250, 0.92)";
     const STACK_RENEWAL = "rgba(52, 211, 153, 0.92)";
 
-    function chartScales(yTickOpts = {}) {
+    function chartScales(yTickOpts = {}, suggestedMax) {
       return {
         x: {
           ticks: { color: CHART_TICK, font: { size: 11 } },
@@ -2610,6 +2611,7 @@
         },
         y: {
           beginAtZero: true,
+          ...(suggestedMax != null ? { suggestedMax } : {}),
           ticks: { color: CHART_TICK, font: { size: 11 }, ...yTickOpts },
           grid: { color: CHART_GRID, drawBorder: false },
         },
@@ -2618,6 +2620,7 @@
 
     function activityBarChart(id, data, target, labels) {
       destroyChart(id);
+      const maxVal = Math.max(...data, target || 0, 1);
       charts[id] = new Chart(document.getElementById(id), {
         type: "bar",
         data: {
@@ -2626,7 +2629,7 @@
         },
         options: {
           plugins: { legend: { display: false } },
-          scales: chartScales({ stepSize: Math.max(1, Math.ceil(Math.max(...data, target) / 5)) }),
+          scales: chartScales({ stepSize: Math.max(1, Math.ceil(maxVal / 5)) }, maxVal * 1.2),
           maintainAspectRatio: false,
         },
         plugins: [targetLinePlugin(target, "#fbbf24")],
@@ -2658,22 +2661,25 @@
       return {
         id: "targetLine",
         afterDraw(chart) {
+          if (target == null || Number.isNaN(target)) return;
           const { ctx, chartArea, scales } = chart;
-          const y = scales.y.getPixelForValue(target);
-          if (y < chartArea.top || y > chartArea.bottom) return;
+          if (!chartArea || !scales.y) return;
+          let y = scales.y.getPixelForValue(target);
+          // Keep label visible even if target sits on the top edge
+          y = Math.min(Math.max(y, chartArea.top + 8), chartArea.bottom - 8);
           const label = labelText || ("Target: " + target);
           ctx.save();
           ctx.strokeStyle = color || "#fbbf24";
           ctx.setLineDash([6, 4]);
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.moveTo(chartArea.left, y);
           ctx.lineTo(chartArea.right, y);
           ctx.stroke();
           ctx.fillStyle = color || "#fbbf24";
-          ctx.font = "bold 11px 'Segoe UI', sans-serif";
+          ctx.font = "bold 12px 'Segoe UI', sans-serif";
           ctx.textAlign = "right";
-          ctx.fillText(label, chartArea.right - 4, y - 4);
+          ctx.fillText(label, chartArea.right - 4, y - 6);
           ctx.restore();
         },
       };
@@ -2681,7 +2687,7 @@
 
     function barChartWithTarget(id, label, labels, data, target, color, drillByIndex) {
       destroyChart(id);
-      const maxVal = data.length ? Math.max(...data, target) : target;
+      const maxVal = Math.max(...(data.length ? data : [0]), target || 0, 1);
       const canvas = document.getElementById(id);
       const chartBox = canvas ? canvas.closest(".chart-box") : null;
       if (chartBox) chartBox.classList.toggle("chart-box--clickable", !!drillByIndex);
@@ -2690,9 +2696,9 @@
         data: { labels, datasets: [{ label, data, backgroundColor: color || BAR_FILL, borderRadius: 5, borderSkipped: false, maxBarThickness: 48 }] },
         options: {
           plugins: { legend: { display: false } },
-          scales: chartScales({ stepSize: Math.max(1, Math.ceil(maxVal / 5)) }),
+          scales: chartScales({ stepSize: Math.max(1, Math.ceil(maxVal / 5)) }, maxVal * 1.25),
           maintainAspectRatio: false,
-          layout: { padding: { top: 20 } },
+          layout: { padding: { top: 28 } },
           onClick: (evt, elements) => {
             if (!elements.length || !drillByIndex) return;
             const drill = drillByIndex[elements[0].index];
@@ -2755,10 +2761,16 @@
           },
           scales: {
             x: { stacked: true, ticks: { color: CHART_TICK, font: { size: 11 } }, grid: { color: CHART_GRID, drawBorder: false } },
-            y: { stacked: true, beginAtZero: true, ticks: { color: CHART_TICK, font: { size: 11 }, stepSize: yStep }, grid: { color: CHART_GRID, drawBorder: false } },
+            y: {
+              stacked: true,
+              beginAtZero: true,
+              suggestedMax: maxVal * 1.15,
+              ticks: { color: CHART_TICK, font: { size: 11 }, stepSize: yStep },
+              grid: { color: CHART_GRID, drawBorder: false },
+            },
           },
           maintainAspectRatio: false,
-          layout: { padding: { top: 24 } },
+          layout: { padding: { top: 28 } },
           onClick: (evt, elements) => {
             if (!elements.length || !drillByIndex) return;
             const drill = drillByIndex[elements[0].index];
