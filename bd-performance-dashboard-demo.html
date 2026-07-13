@@ -990,7 +990,7 @@
           <div class="scorecard-wrap"><table class="data-table" id="openPipelineCoverage"></table></div>
         </div>
         <div class="row-line__cell">
-          <h3>Open Pipeline MoM</h3>
+          <h3>Open Pipeline WoW</h3>
           <div class="chart-box"><div class="chart-wrap md"><canvas id="openPipeMoM"></canvas></div></div>
         </div>
       </div>
@@ -1001,7 +1001,7 @@
           <div class="metric-kpi" id="newBizKpiBox"></div>
         </div>
         <div class="row-line__cell">
-          <h3># of New Biz Deal Created MoM</h3>
+          <h3># of New Biz Deal Created WoW</h3>
           <div class="chart-box"><div class="chart-wrap md"><canvas id="newBizChart"></canvas></div></div>
         </div>
       </div>
@@ -1012,7 +1012,7 @@
           <div class="metric-kpi" id="demoKpiBox"></div>
         </div>
         <div class="row-line__cell">
-          <h3># of New Demo Completed MoM</h3>
+          <h3># of New Demo Completed WoW</h3>
           <div class="chart-box"><div class="chart-wrap md"><canvas id="demoChart"></canvas></div></div>
         </div>
       </div>
@@ -1023,7 +1023,7 @@
           <div class="metric-kpi" id="trialKpiBox"></div>
         </div>
         <div class="row-line__cell">
-          <h3># of New Trial Completed MoM</h3>
+          <h3># of New Trial Completed WoW</h3>
           <div class="chart-box"><div class="chart-wrap md"><canvas id="trialChart"></canvas></div></div>
         </div>
       </div>
@@ -1356,6 +1356,12 @@
           { commit: { amount: 82, deals: 5 }, bestCase: { amount: 50, deals: 4 }, pipeline: { amount: 30, deals: 3 }, newBiz: 26, renewal: 136 },
           { commit: { amount: 85, deals: 5 }, bestCase: { amount: 52, deals: 4 }, pipeline: { amount: 31, deals: 3 }, newBiz: 28, renewal: 140 },
         ],
+        openPipeWeek: [
+          { newBiz: 24, renewal: 128 },
+          { newBiz: 25, renewal: 132 },
+          { newBiz: 27, renewal: 136 },
+          { newBiz: 28, renewal: 140 },
+        ],
         newBizMoM: [3, 4, 5, 4, 6, 4], newBizTarget: 5, newBizWeek: [1, 1, 1, 1],
         newBizPipeMoM: [88, 102, 95, 105, 130, 115], newBizPipeTarget: 120, newBizPipeWeek: [28, 32, 30, 35],
         demoMoM: [1, 2, 2, 1, 2, 1], demoTarget: 2, demoWeek: [0, 1, 0, 0],
@@ -1439,6 +1445,12 @@
           { commit: { amount: 45, deals: 4 }, bestCase: { amount: 33, deals: 3 }, pipeline: { amount: 40, deals: 2 }, newBiz: 30, renewal: 88 },
           { commit: { amount: 48, deals: 4 }, bestCase: { amount: 35, deals: 3 }, pipeline: { amount: 52, deals: 3 }, newBiz: 34, renewal: 101 },
         ],
+        openPipeWeek: [
+          { newBiz: 28, renewal: 88 },
+          { newBiz: 30, renewal: 92 },
+          { newBiz: 32, renewal: 96 },
+          { newBiz: 34, renewal: 101 },
+        ],
         newBizMoM: [4, 5, 6, 5, 7, 5], newBizTarget: 6, newBizWeek: [1, 2, 1, 1],
         newBizPipeMoM: [120, 140, 135, 145, 160, 155], newBizPipeTarget: 150, newBizPipeWeek: [38, 42, 40, 45],
         demoMoM: [2, 2, 3, 2, 3, 3], demoTarget: 3, demoWeek: [1, 1, 1, 0],
@@ -1518,6 +1530,12 @@
           { commit: { amount: 34, deals: 3 }, bestCase: { amount: 46, deals: 3 }, pipeline: { amount: 32, deals: 2 }, newBiz: 16, renewal: 79 },
           { commit: { amount: 36, deals: 3 }, bestCase: { amount: 50, deals: 4 }, pipeline: { amount: 34, deals: 2 }, newBiz: 18, renewal: 102 },
           { commit: { amount: 40, deals: 3 }, bestCase: { amount: 55, deals: 4 }, pipeline: { amount: 38, deals: 2 }, newBiz: 20, renewal: 113 },
+        ],
+        openPipeWeek: [
+          { newBiz: 16, renewal: 102 },
+          { newBiz: 17, renewal: 106 },
+          { newBiz: 19, renewal: 110 },
+          { newBiz: 20, renewal: 113 },
         ],
         newBizMoM: [2, 2, 3, 2, 3, 2], newBizTarget: 4, newBizWeek: [0, 1, 0, 1],
         newBizPipeMoM: [60, 72, 68, 70, 85, 78], newBizPipeTarget: 100, newBizPipeWeek: [18, 22, 20, 24],
@@ -1876,6 +1894,14 @@
       };
     }
 
+    function chartSliceOpenPipeWoW(weekSnaps) {
+      return {
+        labels: getWeekLabels(),
+        newBiz: weekSnaps.map(s => s.newBiz),
+        renewal: weekSnaps.map(s => s.renewal),
+      };
+    }
+
     function chartSliceFromMoM(momData, weekData, period) {
       if (period.type === "week") {
         return { labels: ["Jun"], data: [weekData[period.weekIndex]] };
@@ -1884,6 +1910,10 @@
         labels: period.monthIndices.map(i => MONTHS[i]),
         data: period.monthIndices.map(i => momData[i]),
       };
+    }
+
+    function chartSliceWoW(weekData) {
+      return { labels: getWeekLabels(), data: weekData };
     }
 
     function chartSliceFromPipeline(snapshots, period) {
@@ -2397,27 +2427,28 @@
 
     function renderDealStageStatus(rep, drill) {
       const progressed = [
-        { name: "Acme Corp — Enterprise", stage: "Proposal", pipeline: "New Business", amount: 45, nextStep: "Send revised pricing", daysInStage: 6, status: "progressed" },
-        { name: "GlobalTech Ltd", stage: "Negotiation", pipeline: "Expansion", amount: 62, nextStep: "Legal review", daysInStage: 4, status: "progressed" },
-        { name: "MedHealth Group", stage: "Demo Completed", pipeline: "New Business", amount: 38, nextStep: "Schedule exec call", daysInStage: 3, status: "progressed" },
+        { name: "Acme Corp — Enterprise", stage: "Proposal", pipeline: "New Business", amount: 45, lastActivityDate: "2026-06-11", daysInStage: 6, status: "progressed" },
+        { name: "GlobalTech Ltd", stage: "Negotiation", pipeline: "Expansion", amount: 62, lastActivityDate: "2026-06-12", daysInStage: 4, status: "progressed" },
+        { name: "MedHealth Group", stage: "Demo Completed", pipeline: "New Business", amount: 38, lastActivityDate: "2026-06-10", daysInStage: 3, status: "progressed" },
       ];
       const stale = (PROFILES[rep].staleDeals || []).map(d => ({
         ...d,
-        nextStep: "—",
+        lastActivityDate: d.lastProgress || "—",
         daysInStage: d.staleDays,
         status: "stale",
       }));
       const allDeals = [...progressed, ...stale];
       const table = document.getElementById("dealStageStatusTable");
       if (!table) return;
+      const headers = ["Deal Name", "Status", "Deal Stage", "Pipeline", "Amount", "Time in Current Stage", "Last Activity Date (Owner)"];
       if (!allDeals.length) {
         table.innerHTML = `
-          <thead><tr><th>Deal Name</th><th>Status</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Time in Current Stage</th><th>Next Steps</th></tr></thead>
+          <thead><tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr></thead>
           <tbody><tr><td colspan="7" style="text-align:center;color:var(--muted);">No deal stage activity in this period</td></tr></tbody>`;
         return;
       }
       table.innerHTML = `
-        <thead><tr><th>Deal Name</th><th>Status</th><th>Deal Stage</th><th>Pipeline</th><th>Amount</th><th>Time in Current Stage</th><th>Next Steps</th></tr></thead>
+        <thead><tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr></thead>
         <tbody>${allDeals.map((d, i) => `
           <tr>
             <td><span class="clickable" data-dss="${i}">${d.name}</span></td>
@@ -2426,7 +2457,7 @@
             <td>${d.pipeline}</td>
             <td>${fmtK(d.amount)}</td>
             <td><span class="${staleDurationClass(d.daysInStage)}">${formatStaleDuration(d.daysInStage)}</span></td>
-            <td>${d.nextStep}</td>
+            <td>${d.lastActivityDate}</td>
           </tr>`).join("")}
         </tbody>`;
       document.querySelectorAll("#dealStageStatusTable .clickable").forEach(el => {
@@ -2435,7 +2466,8 @@
           openModal("Deal — " + d.name, ["Field", "Value"], [
             ["Deal", d.name], ["Status", d.status === "progressed" ? "Progressed" : "No Progress"],
             ["Stage", d.stage], ["Pipeline", d.pipeline], ["Amount", fmtK(d.amount)],
-            ["Time in Current Stage", formatStaleDuration(d.daysInStage)], ["Next Steps", d.nextStep],
+            ["Time in Current Stage", formatStaleDuration(d.daysInStage)],
+            ["Last Activity Date (Owner)", d.lastActivityDate],
           ]);
         });
       });
@@ -2562,7 +2594,7 @@
     }
 
     function getWeekLabels() {
-      return Array.from({ length: 8 }, (_, i) => `W${i + 1} June`);
+      return ["W1 Jun", "W2 Jun", "W3 Jun", "W4 Jun"];
     }
 
     const BAR_FILL = "rgba(96, 165, 250, 0.9)";
@@ -2738,10 +2770,10 @@
 
     function getChartDrillData(rep, period) {
       const p = PROFILES[rep];
-      const pipe = chartSliceFromOpenPipeSnapshots(p.openPipeSnapshots, period);
-      const newBiz = chartSliceFromMoM(p.newBizMoM, p.newBizWeek, period);
-      const demo = chartSliceFromMoM(p.demoMoM, p.demoWeek, period);
-      const trial = chartSliceFromMoM(p.trialMoM, p.trialWeek, period);
+      const pipe = chartSliceOpenPipeWoW(p.openPipeWeek);
+      const newBiz = chartSliceWoW(p.newBizWeek);
+      const demo = chartSliceWoW(p.demoWeek);
+      const trial = chartSliceWoW(p.trialWeek);
       const mkPipeDrill = (label, i) => ({
         title: `Open Pipeline — ${label}`,
         headers: ["Deal", "Pipeline Type", "Amount", "Forecast"],
@@ -2755,9 +2787,9 @@
         title: `${metric} — ${label}`,
         headers: ["Deal", "Stage", "Date", "Owner"],
         rows: [
-          ["StartupHub Co", "Discovery", `2026-0${4 + i}-12`, REPS[rep]],
-          ["Skills Academy LATAM", "Qualified", `2026-0${4 + i}-18`, REPS[rep]],
-          ["EduFirst Academy", "Demo Completed", `2026-0${4 + i}-22`, REPS[rep]],
+          ["StartupHub Co", "Discovery", `2026-06-0${1 + i}`, REPS[rep]],
+          ["Skills Academy LATAM", "Qualified", `2026-06-0${2 + i}`, REPS[rep]],
+          ["EduFirst Academy", "Demo Completed", `2026-06-0${3 + i}`, REPS[rep]],
         ],
       });
       return {
@@ -2772,22 +2804,20 @@
       const p = PROFILES[rep];
       const chartDrill = getChartDrillData(rep, period);
 
-      const pipe = chartSliceFromOpenPipeSnapshots(p.openPipeSnapshots, period);
+      const pipe = chartSliceOpenPipeWoW(p.openPipeWeek);
       stackedPipelineMoMChart("openPipeMoM", pipe.labels, pipe.newBiz, pipe.renewal, chartDrill.openPipe);
 
-      const chartTarget = period.type === "week"
-        ? periodTarget(p.newBizTarget, period)
-        : p.newBizTarget;
-      const newBiz = chartSliceFromMoM(p.newBizMoM, p.newBizWeek, period);
-      barChartWithTarget("newBizChart", "# New Biz", newBiz.labels, newBiz.data, chartTarget, null, chartDrill.newBiz);
+      const newBizWeekTarget = Math.ceil(p.newBizTarget / 4);
+      const newBiz = chartSliceWoW(p.newBizWeek);
+      barChartWithTarget("newBizChart", "# New Biz", newBiz.labels, newBiz.data, newBizWeekTarget, null, chartDrill.newBiz);
 
-      const demoTarget = period.type === "week" ? periodTarget(p.demoTarget, period) : p.demoTarget;
-      const demo = chartSliceFromMoM(p.demoMoM, p.demoWeek, period);
-      barChartWithTarget("demoChart", "# Demos", demo.labels, demo.data, demoTarget, null, chartDrill.demo);
+      const demoWeekTarget = Math.ceil(p.demoTarget / 4);
+      const demo = chartSliceWoW(p.demoWeek);
+      barChartWithTarget("demoChart", "# Demos", demo.labels, demo.data, demoWeekTarget, null, chartDrill.demo);
 
-      const trialTarget = period.type === "week" ? periodTarget(p.trialTarget, period) : p.trialTarget;
-      const trial = chartSliceFromMoM(p.trialMoM, p.trialWeek, period);
-      barChartWithTarget("trialChart", "# Trials", trial.labels, trial.data, trialTarget, null, chartDrill.trial);
+      const trialWeekTarget = Math.ceil(p.trialTarget / 4);
+      const trial = chartSliceWoW(p.trialWeek);
+      barChartWithTarget("trialChart", "# Trials", trial.labels, trial.data, trialWeekTarget, null, chartDrill.trial);
     }
 
     const ALLEGO = {
